@@ -1,0 +1,107 @@
+import React, { useEffect, useRef, useState } from "react";
+import "./App.css";
+import bwipjs from "bwip-js";
+import lz4 from "lz4";
+import { ReedSolomonEncoder } from "@zxing/library";
+
+const chunkHeaderSize = 8;
+const testContent = new Array(50).fill("1234567890").join("");
+
+// az.encodeWithHints(testContent, BarcodeFormat.AZTEC, 1500, 1500, hintMap)
+function decodeChunk(binData: Uint8Array) {
+  if (binData.length <= chunkHeaderSize) {
+    return;
+  }
+
+  const chunkIndex = (binData[1] << 8) | binData[0];
+  const chunksTotal = (binData[3] << 8) | binData[2];
+
+  if (chunksTotal < 0 || chunkIndex >= chunksTotal) {
+    throw new Error("Cannot decode chunk header");
+  }
+
+  let chunkLength = (binData[7] << 8) | binData[6];
+  let chunk = {
+    start: (binData[5] << 8) | binData[4],
+    data: binData.slice(chunkHeaderSize, chunkHeaderSize + chunkLength),
+  };
+
+  if (chunk.start < 0 || chunkLength < 0 || chunk.data.length !== chunkLength) {
+    throw new Error("Cannot decode chunk body");
+  }
+
+  return { chunksTotal, chunkIndex };
+}
+
+function App() {
+  const [chunks, setChunks] = useState(new Set());
+  const ref = useRef<Number>();
+
+  const qrstuff = async () => {
+    const video = document.querySelector("#video") as HTMLVideoElement;
+    const canvas = document.querySelector("#canvas") as HTMLCanvasElement;
+    const ctx = canvas!.getContext("2d");
+
+    if (navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices
+        .getUserMedia({ video: true })
+        .then(function (stream) {
+          console.log({ stream });
+          video.srcObject = stream;
+        });
+      const copyFrame = () => {
+        ref.current = requestAnimationFrame(() => {
+          if (ctx) {
+            ctx.clearRect(0, 0, 800, 600);
+            ctx.drawImage(video, 0, 0, 800, 600);
+            const imageData = ctx.getImageData(0, 0, 800, 600).data;
+            ///HERE
+          }
+          copyFrame();
+        });
+      };
+      copyFrame();
+    }
+  };
+
+  const encode = () => {};
+
+  useEffect(() => {
+    // qrstuff();
+
+    bwipjs.toCanvas("qrcode", {
+      bcid: "azteccode",
+
+      text: testContent,
+    });
+  }, []);
+
+  console.log(chunks);
+
+  return (
+    <div className="App">
+      <canvas id="qrcode" width={500} height={500}></canvas>
+      <video
+        id="video"
+        style={{
+          border: "1px solid",
+          transform: "scaleX(-1)",
+        }}
+        autoPlay={true}
+        width="800"
+        height="600"
+      ></video>
+      <canvas
+        id="canvas"
+        width="800"
+        height="600"
+        style={{ visibility: "hidden" }}
+      ></canvas>
+
+      <textarea id="payload" cols={100} rows={50}></textarea>
+      <button onClick={() => encode()}>Encode</button>
+    </div>
+  );
+}
+
+export default App;

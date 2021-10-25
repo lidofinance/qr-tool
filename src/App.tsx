@@ -1,24 +1,29 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import "./App.css";
+import Encoder from "./Encoder";
+import Decoder from "./Decoder";
+
+import "bulma/css/bulma.min.css";
 
 function App() {
+  const [link, setLink] = useState("encoder");
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="tabs">
+        <ul>
+          <li className={link === "encoder" ? "is-active" : ""}>
+            <a onClick={() => setLink("encoder")}>Encoder</a>
+          </li>
+          <li className={link === "decoder" ? "is-active" : ""}>
+            <a onClick={() => setLink("decoder")}>Decoder</a>
+          </li>
+        </ul>
+      </div>
+      <div>
+        {link === "encoder" && <Encoder />}
+        {link === "decoder" && <Decoder />}
+      </div>
     </div>
   );
 }
