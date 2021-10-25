@@ -1,0 +1,7 @@
+.resultImage {
+  cursor: pointer;
+  border: 1px solid #ccc;
+}
+.result {
+  margin: auto;
+}
