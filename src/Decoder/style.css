@@ -1,0 +1,17 @@
+.frameItem {
+  border: 1px solid #eee;
+  margin: 1px;
+  display: inline-block;
+  background: #330000;
+  width: 6px;
+  height: 6px;
+}
+.done {
+  background-color: #00cc00;
+}
+.active {
+  background: red !important;
+}
+.progressBar {
+  width: 400px;
+}

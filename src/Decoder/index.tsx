@@ -9,6 +9,7 @@ import {
 import ReedSolomon from "../Encoder/reed-solomon";
 import { decompress } from "mini-lz4";
 import { uint8ArrayToString } from "../utils";
+import "./style.css";
 
 const rs = new ReedSolomon(EXTRA_BLOCKS_COUNT);
 
@@ -19,8 +20,8 @@ function Decoder() {
   const [parsedFrames, setParsedFrames] = useState<Record<number, Buffer>>({});
   const [totalFrames, setTotalFrames] = useState<number>(0);
   const [totalPlainFrames, setTotalPlainFrames] = useState<number>(0);
-  const [framesProcessed, setFramesProcessed] = useState<boolean>(false);
   const [result, setResult] = useState<string | undefined>();
+  const [currentFrameIdx, setCurrentFrameIdx] = useState<number | undefined>();
 
   const tryProcessBlock = (
     frameId: number,
@@ -61,7 +62,7 @@ function Decoder() {
         lostFrames.push(i);
       }
     }
-    if (lostFrames.length > 3) return;
+    if (lostFrames.length > EXTRA_BLOCKS_COUNT / 2) return;
     //decode
     const out: number[][] = [];
     for (let pos = 0; pos < CHUNK_SIZE; pos++) {
@@ -99,6 +100,7 @@ function Decoder() {
       setTotalPlainFrames(totalPlainFrames);
     }
     const currentFrameIdx = currentBuffer.readUInt16LE(4);
+    setCurrentFrameIdx(currentFrameIdx);
     if (!frames[currentFrameIdx])
       tryProcessBlock(
         currentFrameIdx,
@@ -121,6 +123,7 @@ function Decoder() {
         ? uint8ArrayToString(decompress(buffer))
         : buffer.toString()
     );
+    ref.current!.stop();
   }, [parsedFrames, totalPlainFrames]);
 
   useEffect(() => {
@@ -152,18 +155,32 @@ function Decoder() {
     <>
       <div className="columns">
         <div className="column">
-          <div>{JSON.stringify(Object.keys(frames).map(Number).sort())}</div>
-          <div>
+          <div className="progressBar">
             {new Array(totalFrames)
               .fill("")
-              .map((_, index) => (frames[index] ? false : index))
-              .filter(Boolean)
-              .join(",")}
+              .map((_, index) => ({
+                index,
+                done: frames[index] ? false : index,
+                active: index === currentFrameIdx,
+              }))
+              .map((item) => (
+                <div
+                  key={`frame-item-${item.index}`}
+                  title={item.index.toString()}
+                  className={`frameItem ${item.active && "active"} ${
+                    item.done && "done"
+                  }`}
+                ></div>
+              ))}
           </div>
-          {framesProcessed && <div>Done</div>}
           <video
             id="preview"
-            style={{ width: 800, height: 600, transform: "scaleX(-1)" }}
+            style={{
+              width: 800,
+              height: 600,
+              transform: "scaleX(-1)",
+              display: result ? "none" : "block",
+            }}
           ></video>
           {result && (
             <textarea
