@@ -8,7 +8,7 @@ import {
 } from "../config/coding";
 import ReedSolomon from "../Encoder/reed-solomon";
 import { decompress } from "mini-lz4";
-import { uint8ArrayToString } from "../utils";
+import { FileType, generateDownload, uint8ArrayToString } from "../utils";
 import "./style.css";
 
 const rs = new ReedSolomon(EXTRA_BLOCKS_COUNT);
@@ -129,10 +129,13 @@ function Decoder() {
   useEffect(() => {
     let ac: IScannerControls;
     (async () => {
-      const scanner = new BrowserQRCodeReader(undefined, {
-        delayBetweenScanSuccess: 0,
-        delayBetweenScanAttempts: 0,
-      });
+      const scanner = new BrowserQRCodeReader(
+        new Map().set("TRY_HARDER", true),
+        {
+          delayBetweenScanSuccess: 10,
+          delayBetweenScanAttempts: 0,
+        }
+      );
 
       ac = await scanner.decodeFromVideoDevice(
         undefined,
@@ -153,42 +156,55 @@ function Decoder() {
 
   return (
     <>
-      <div className="columns">
-        <div className="column">
-          <div className="progressBar">
-            {new Array(totalFrames)
-              .fill("")
-              .map((_, index) => ({
-                index,
-                done: frames[index] ? false : index,
-                active: index === currentFrameIdx,
-              }))
-              .map((item) => (
-                <div
-                  key={`frame-item-${item.index}`}
-                  title={item.index.toString()}
-                  className={`frameItem ${item.active && "active"} ${
-                    item.done && "done"
-                  }`}
-                ></div>
-              ))}
+      <div className="section">
+        <div className="columns">
+          <div className="column">
+            <div className="progressBar">
+              {new Array(totalFrames)
+                .fill("")
+                .map((_, index) => ({
+                  index,
+                  done: frames[index] ? false : index,
+                  active: index === currentFrameIdx,
+                }))
+                .map((item) => (
+                  <div
+                    key={`frame-item-${item.index}`}
+                    title={item.index.toString()}
+                    className={`frameItem ${item.active && "active"} ${
+                      item.done && "done"
+                    }`}
+                  ></div>
+                ))}
+            </div>
+            <video
+              id="preview"
+              style={{
+                width: 800,
+                height: 600,
+                transform: "scaleX(-1)",
+                display: result ? "none" : "block",
+              }}
+            ></video>
+            {result && (
+              <>
+                <textarea
+                  className="textarea"
+                  value={result}
+                  readOnly={true}
+                ></textarea>
+
+                <input
+                  type="button"
+                  className="button is-primary"
+                  onClick={() =>
+                    generateDownload(`${Date.now()}.txt`, result, FileType.TEXT)
+                  }
+                  value="Download"
+                />
+              </>
+            )}
           </div>
-          <video
-            id="preview"
-            style={{
-              width: 800,
-              height: 600,
-              transform: "scaleX(-1)",
-              display: result ? "none" : "block",
-            }}
-          ></video>
-          {result && (
-            <textarea
-              className="textarea"
-              value={result}
-              readOnly={true}
-            ></textarea>
-          )}
         </div>
       </div>
     </>
