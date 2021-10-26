@@ -1,5 +1,5 @@
 {
-  "name": "test-zzx",
+  "name": "qr-tool",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -12,7 +12,6 @@
     "bulma": "^0.9.3",
     "gifshot": "^0.4.5",
     "inliner": "^1.13.1",
-    "instascan": "https://github.com/schmich/instascan",
     "mini-lz4": "^3.0.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -20,15 +19,13 @@
     "react-scripts": "4.0.3",
     "tiny-async-pool": "^1.2.0",
     "typescript": "^4.1.2",
-    "web-vitals": "^1.0.1",
-    "webrtc-adapter": "^8.1.0",
-    "workerpool": "^6.1.5"
+    "web-vitals": "^1.0.1"
   },
+  "license": "UNLICENSED",
   "scripts": {
     "start": "react-scripts start",
     "build": "PUBLIC_URL=. GENERATE_SOURCEMAP=false INLINE_RUNTIME_CHUNK=true react-scripts build",
     "compact": "inliner build/index.html > build/index_compact.html",
-    "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
