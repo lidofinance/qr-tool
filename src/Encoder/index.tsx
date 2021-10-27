@@ -219,7 +219,7 @@ function Encoder() {
 
   return (
     <>
-      <div className="section">
+      <div className="container">
         <div className="columns">
           <div className="column">
             <Dropzone
@@ -232,8 +232,14 @@ function Encoder() {
                   <input {...getInputProps()} />
                   <textarea
                     ref={textareaRef}
-                    className={hovered ? "is-primary textarea" : "textarea"}
-                    placeholder="Put your payload here or just drop your file here"
+                    className={
+                      hovered ? "has-background-primary textarea" : "textarea"
+                    }
+                    placeholder={
+                      hovered
+                        ? "Drop it! Drop it NOW!"
+                        : "Put your payload here or just drop your file here"
+                    }
                   ></textarea>
                 </div>
               )}

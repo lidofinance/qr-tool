@@ -8,11 +8,18 @@ import "./style.css";
 
 function Decoder() {
   const ref = useRef<IScannerControls>();
+  const [framesOpts, setFramesOpts] = useState<
+    | {
+        blocksCount: number;
+        extraBlocksCount: number;
+        totalFrames: number;
+        totalPlainFrames: number;
+      }
+    | undefined
+  >();
   const [currentBuffer, setCurrentBuffer] = useState<Buffer | undefined>();
   const [frames, setFrames] = useState<Record<number, Buffer>>({});
   const [parsedFrames, setParsedFrames] = useState<Record<number, Buffer>>({});
-  const [totalFrames, setTotalFrames] = useState<number>(0);
-  const [totalPlainFrames, setTotalPlainFrames] = useState<number>(0);
   const [result, setResult] = useState<string | undefined>();
   const [currentFrameIdx, setCurrentFrameIdx] = useState<number | undefined>();
 
@@ -96,21 +103,21 @@ function Decoder() {
 
   useEffect(() => {
     if (!currentBuffer) return;
-    if (!totalFrames) {
-      const totalFrames = currentBuffer.readUInt16LE(0);
-      const totalPlainFrames = currentBuffer.readUInt16LE(2);
-      setTotalFrames(totalFrames);
-      setTotalPlainFrames(totalPlainFrames);
-    }
+
     const currentFrameIdx = currentBuffer.readUInt16LE(4);
     setCurrentFrameIdx(currentFrameIdx);
     if (!frames[currentFrameIdx]) {
-      tryProcessBlock(currentFrameIdx, currentBuffer.slice(8), {
+      const opts = framesOpts || {
         totalPlainFrames: currentBuffer.readUInt16LE(2),
         totalFrames: currentBuffer.readUInt16LE(0),
         blocksCount: currentBuffer.readUInt8(6),
         extraBlocksCount: currentBuffer.readUInt8(7),
-      });
+      };
+      if (!framesOpts) {
+        setFramesOpts(opts);
+      }
+
+      tryProcessBlock(currentFrameIdx, currentBuffer.slice(8), opts);
     }
   }, [currentBuffer]);
 
@@ -118,7 +125,7 @@ function Decoder() {
     const frameKeys = Object.keys(parsedFrames).sort(
       (a: string, b: string) => Number(a) - Number(b)
     );
-    if (!totalPlainFrames || frameKeys.length !== totalPlainFrames) return;
+    if (!framesOpts || frameKeys.length !== framesOpts.totalPlainFrames) return;
     const buffer = Buffer.concat(
       frameKeys.map((key: string) => parsedFrames[Number(key)])
     );
@@ -128,7 +135,26 @@ function Decoder() {
         : buffer.toString()
     );
     ref.current!.stop();
-  }, [parsedFrames, totalPlainFrames]);
+  }, [parsedFrames, framesOpts]);
+
+  const getMissingFrames = () => {
+    if (!framesOpts) return;
+    const { blocksCount, extraBlocksCount, totalFrames } = framesOpts;
+    if (!blocksCount || !extraBlocksCount) return;
+    const frameIdxs = new Array(totalFrames)
+      .fill("")
+      .map((_, index) => !!frames[index])
+      .map((frame, index) => {
+        if (frame) return true;
+        const blockIdx = Math.floor(index / (blocksCount + extraBlocksCount));
+        if (parsedFrames[blockIdx * blocksCount]) return true;
+        return false;
+      })
+      .map((item, index) => (item ? -1 : index))
+      .filter((v) => v > 0);
+
+    return frameIdxs.join(",");
+  };
 
   useEffect(() => {
     let ac: IScannerControls;
@@ -140,17 +166,20 @@ function Decoder() {
           delayBetweenScanAttempts: 0,
         }
       );
-
-      ac = await scanner.decodeFromVideoDevice(
-        undefined,
-        "preview",
-        (res, err) => {
-          if (err) return;
-          const buffer = Buffer.from(res?.getText() || "", "base64");
-          setCurrentBuffer(buffer);
-        }
-      );
-      ref.current = ac;
+      try {
+        ac = await scanner.decodeFromVideoDevice(
+          undefined,
+          "preview",
+          (res, err) => {
+            if (err) return;
+            const buffer = Buffer.from(res?.getText() || "", "base64");
+            setCurrentBuffer(buffer);
+          }
+        );
+        ref.current = ac;
+      } catch (e) {
+        console.log(`Can't init video`);
+      }
     })();
 
     return () => {
@@ -158,13 +187,28 @@ function Decoder() {
     };
   }, []);
 
+  const missingFrames = getMissingFrames();
+
   return (
     <>
-      <div className="section">
+      <div className="container">
+        <div>
+          {!!missingFrames && (
+            <>
+              <input
+                type="text"
+                readOnly={true}
+                value={missingFrames}
+                className="input"
+                placeholder="All frames are parsed"
+              />
+            </>
+          )}
+        </div>
         <div className="columns">
           <div className="column">
             <div className="progressBar">
-              {new Array(totalFrames)
+              {new Array(framesOpts?.totalFrames || 0)
                 .fill("")
                 .map((_, index) => ({
                   index,
@@ -197,15 +241,32 @@ function Decoder() {
                   value={result}
                   readOnly={true}
                 ></textarea>
-
-                <input
-                  type="button"
-                  className="button is-primary"
-                  onClick={() =>
-                    generateDownload(`${Date.now()}.txt`, result, FileType.TEXT)
-                  }
-                  value="Download"
-                />
+                <div className="mt-2">
+                  <input
+                    type="button"
+                    className="button is-primary mr-1"
+                    onClick={() =>
+                      generateDownload(
+                        `${Date.now()}.txt`,
+                        result,
+                        FileType.TEXT
+                      )
+                    }
+                    value="Download"
+                  />
+                  <input
+                    type="reset"
+                    className="button is-danger"
+                    onClick={() => {
+                      setCurrentBuffer(undefined);
+                      setFrames({});
+                      setFramesOpts(undefined);
+                      setParsedFrames({});
+                      setResult(undefined);
+                    }}
+                    value="Reset"
+                  />
+                </div>
               </>
             )}
           </div>
