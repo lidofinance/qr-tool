@@ -173,11 +173,20 @@ function Encoder() {
     setGifProgress(20);
 
     await addLog(`Creating GIF...`);
+
+    const imagesToProcess = exactFrames.length
+      ? images.filter((_, index) => exactFrames.includes(index))
+      : images;
+
+    if (!imagesToProcess.length) {
+      await addLog(`😖 No frames to include into gif`);
+      setGifProgress(undefined);
+      return;
+    }
+
     gifshot.createGIF(
       {
-        images: exactFrames.length
-          ? images.filter((_, index) => exactFrames.includes(index))
-          : images,
+        images: imagesToProcess,
         gifWidth: IMAGE_SIZE,
         gifHeight: IMAGE_SIZE,
         numWorkers: 3,
