@@ -1,17 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { BrowserQRCodeReader, IScannerControls } from "@zxing/browser";
-import {
-  BLOCKS_COUNT,
-  CHUNK_SIZE,
-  COMPRESS_PAYLOAD,
-  EXTRA_BLOCKS_COUNT,
-} from "../config/coding";
+import { CHUNK_SIZE, COMPRESS_PAYLOAD } from "../config/coding";
 import ReedSolomon from "../Encoder/reed-solomon";
 import { decompress } from "mini-lz4";
 import { FileType, generateDownload, uint8ArrayToString } from "../utils";
 import "./style.css";
-
-const rs = new ReedSolomon(EXTRA_BLOCKS_COUNT);
 
 function Decoder() {
   const ref = useRef<IScannerControls>();
@@ -26,9 +19,19 @@ function Decoder() {
   const tryProcessBlock = (
     frameId: number,
     frame: Buffer,
-    totalPlainFrames: number,
-    totalFrames: number
+    {
+      totalPlainFrames,
+      totalFrames,
+      blocksCount,
+      extraBlocksCount,
+    }: {
+      totalPlainFrames: number;
+      totalFrames: number;
+      blocksCount: number;
+      extraBlocksCount: number;
+    }
   ): void => {
+    const rs = new ReedSolomon(extraBlocksCount);
     const newFrames = {
       ...frames,
       [frameId]: frame,
@@ -38,20 +41,20 @@ function Decoder() {
       [frameId]: frame,
     }));
 
-    if (totalPlainFrames < BLOCKS_COUNT) {
+    if (totalPlainFrames < blocksCount) {
       setParsedFrames((parsedFrames) => ({
         ...parsedFrames,
         [frameId]: frame,
       }));
       return;
     }
-    const blockIdx = Math.floor(frameId / (BLOCKS_COUNT + EXTRA_BLOCKS_COUNT));
-    const partStart = blockIdx * (BLOCKS_COUNT + EXTRA_BLOCKS_COUNT);
+    const blockIdx = Math.floor(frameId / (blocksCount + extraBlocksCount));
+    const partStart = blockIdx * (blocksCount + extraBlocksCount);
     const partEnd = Math.min(
-      partStart + BLOCKS_COUNT + EXTRA_BLOCKS_COUNT,
+      partStart + blocksCount + extraBlocksCount,
       totalFrames
     );
-    if (parsedFrames[blockIdx * BLOCKS_COUNT]) return;
+    if (parsedFrames[blockIdx * blocksCount]) return;
 
     const partChunks = new Array(partEnd - partStart);
     const lostFrames = [];
@@ -62,7 +65,7 @@ function Decoder() {
         lostFrames.push(i);
       }
     }
-    if (lostFrames.length > EXTRA_BLOCKS_COUNT / 2) return;
+    if (lostFrames.length > extraBlocksCount / 2) return;
     //decode
     const out: number[][] = [];
     for (let pos = 0; pos < CHUNK_SIZE; pos++) {
@@ -85,7 +88,7 @@ function Decoder() {
     setParsedFrames((parsedFrames) => {
       const newParsedFrames = { ...parsedFrames };
       for (let i = 0; i < out.length; i++) {
-        newParsedFrames[blockIdx * BLOCKS_COUNT + i] = Buffer.from(out[i]);
+        newParsedFrames[blockIdx * blocksCount + i] = Buffer.from(out[i]);
       }
       return newParsedFrames;
     });
@@ -101,13 +104,14 @@ function Decoder() {
     }
     const currentFrameIdx = currentBuffer.readUInt16LE(4);
     setCurrentFrameIdx(currentFrameIdx);
-    if (!frames[currentFrameIdx])
-      tryProcessBlock(
-        currentFrameIdx,
-        currentBuffer.slice(6),
-        currentBuffer.readUInt16LE(2),
-        currentBuffer.readUInt16LE(0)
-      );
+    if (!frames[currentFrameIdx]) {
+      tryProcessBlock(currentFrameIdx, currentBuffer.slice(8), {
+        totalPlainFrames: currentBuffer.readUInt16LE(2),
+        totalFrames: currentBuffer.readUInt16LE(0),
+        blocksCount: currentBuffer.readUInt8(6),
+        extraBlocksCount: currentBuffer.readUInt8(7),
+      });
+    }
   }, [currentBuffer]);
 
   useEffect(() => {

@@ -13,22 +13,34 @@ import {
   IMAGE_SIZE,
 } from "../config/coding";
 import asyncPool from "tiny-async-pool";
+
 import "./style.css";
 
 const qrHints = new Map();
 const qrEncoder = new BrowserQRCodeSvgWriter();
 
 const createQR = (
-  index: number,
-  total: number,
-  totalPlain: number,
-  chunk: Uint8Array
+  chunk: Uint8Array,
+  {
+    index,
+    total,
+    totalPlain,
+    blocksCount,
+    extraBlocksCount,
+  }: {
+    blocksCount: number;
+    extraBlocksCount: number;
+    index: number;
+    total: number;
+    totalPlain: number;
+  }
 ): Promise<string> =>
   new Promise((r) => {
-    const header = Buffer.from(
-      new Uint16Array([total, totalPlain, index]).buffer
-    );
-    const text = Buffer.concat([header, chunk]);
+    const text = Buffer.concat([
+      Buffer.from(new Uint16Array([total, totalPlain, index]).buffer),
+      Buffer.from(new Uint8Array([blocksCount, extraBlocksCount]).buffer),
+      chunk,
+    ]);
     const svg = qrEncoder.write(
       text.toString("base64"),
       IMAGE_SIZE,
@@ -60,23 +72,30 @@ const compressPayload = (payload: string): Uint8Array => {
   return COMPRESS_PAYLOAD ? compress(payload) : Buffer.from(payload);
 };
 
-const rs = new ReedSolomon(EXTRA_BLOCKS_COUNT);
-
-const solmonReedChunks = (chunks: Uint8Array[]): Uint8Array[] => {
+const solmonReedChunks = (
+  chunks: Uint8Array[],
+  {
+    blocksCount,
+    extraBlocksCount,
+  }: {
+    blocksCount: number;
+    extraBlocksCount: number;
+  }
+): Uint8Array[] => {
+  const rs = new ReedSolomon(extraBlocksCount);
   const out: number[][] = [];
-  if (chunks.length < BLOCKS_COUNT) {
+  if (chunks.length < blocksCount) {
     console.log(chunks);
     return chunks;
   }
-  console.log(`pre-chunks ${chunks.length}`);
-  const iterations = Math.ceil(chunks.length / BLOCKS_COUNT);
+  const iterations = Math.ceil(chunks.length / blocksCount);
   for (let i = 0; i < iterations; i++) {
-    const blocksIndexCeil = Math.min((i + 1) * BLOCKS_COUNT, chunks.length);
+    const blocksIndexCeil = Math.min((i + 1) * blocksCount, chunks.length);
     for (let pos = 0; pos < CHUNK_SIZE; pos++) {
       let s = [];
-      //get one char from each chunk to compose s[BLOCKS_COUNT]
+      //get one char from each chunk to compose s[blockCount]
       for (
-        let blockIdx = i * BLOCKS_COUNT;
+        let blockIdx = i * blocksCount;
         blockIdx < blocksIndexCeil;
         blockIdx++
       ) {
@@ -86,7 +105,7 @@ const solmonReedChunks = (chunks: Uint8Array[]): Uint8Array[] => {
       const eccStr = rs.encode(s);
       //put it into stretched out
       for (let j = 0; j < eccStr.length; j++) {
-        const idx = (BLOCKS_COUNT + EXTRA_BLOCKS_COUNT) * i + j;
+        const idx = (blocksCount + extraBlocksCount) * i + j;
         if (!out[idx]) out[idx] = [];
         out[idx][pos] = eccStr[j];
       }
@@ -96,6 +115,9 @@ const solmonReedChunks = (chunks: Uint8Array[]): Uint8Array[] => {
 };
 
 function Encoder() {
+  const [blocksCount, setBlocksCount] = useState<number>(BLOCKS_COUNT);
+  const [extraBlocksCount, setExtraBlocksCount] =
+    useState<number>(EXTRA_BLOCKS_COUNT);
   const [hovered, setHovered] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [log, setLog] = useState<string[]>([]);
@@ -116,19 +138,20 @@ function Encoder() {
 
   const encode = async () => {
     if (!textareaRef.current) return;
+    const payload = (textareaRef.current as HTMLTextAreaElement).value;
+    if (!payload) return;
     setGifProgress(0);
     setLog([]);
     setResultImage(undefined);
-    const payload = (textareaRef.current as HTMLTextAreaElement).value;
-    if (!payload) return;
     await addLog(`Payload length: ${payload.length}`);
     const compressedPayload = compressPayload(payload);
     await addLog(`Compressed length: ${compressedPayload.length}`);
     setGifProgress(2);
     // const decompressed = decompress(stringToUint8Array(compressedPayload));
     const parts = stringToChunks(compressedPayload, CHUNK_SIZE);
+    await addLog(`Chunks before: ${parts.length}`);
     setGifProgress(5);
-    const chunks = solmonReedChunks(parts);
+    const chunks = solmonReedChunks(parts, { blocksCount, extraBlocksCount });
     await addLog(`Chunks count ${chunks.length}`);
     await addLog(`Creating qrs...`);
     setGifProgress(10);
@@ -137,7 +160,13 @@ function Encoder() {
       10,
       chunks.map((chunk, index) => ({ data: chunk, index })),
       (chunk) => {
-        return createQR(chunk.index, chunks.length, parts.length, chunk.data);
+        return createQR(chunk.data, {
+          index: chunk.index,
+          total: chunks.length,
+          totalPlain: parts.length,
+          blocksCount,
+          extraBlocksCount,
+        });
       }
     );
     setGifProgress(20);
@@ -204,6 +233,65 @@ function Encoder() {
                 onChange={() => {}}
                 onClick={() => encode()}
               />
+              <input
+                className="button"
+                value="Settings"
+                onChange={() => {}}
+                onClick={() => encode()}
+              />
+            </div>
+            <div className="mt-5">
+              <div className="field">
+                <label className="label">Blocks count</label>
+                <div className="control">
+                  <input
+                    type="range"
+                    min={10}
+                    max={100}
+                    defaultValue={blocksCount}
+                    className="slider"
+                    onChange={(e) =>
+                      e.target && setBlocksCount(Number(e.target.value))
+                    }
+                  />
+                  <span>({blocksCount})</span>
+                </div>
+              </div>
+
+              <div className="field">
+                <label className="label">Error correction blocks count</label>
+                <div className="control">
+                  <input
+                    type="range"
+                    min={2}
+                    max={12}
+                    defaultValue={extraBlocksCount / 2}
+                    className="slider"
+                    onChange={(e) =>
+                      e.target &&
+                      setExtraBlocksCount(Number(e.target.value) * 2)
+                    }
+                  />
+                  <span>({extraBlocksCount})</span>
+                </div>
+              </div>
+
+              <div className="field">
+                <label className="label">Frame delay</label>
+                <div className="control">
+                  <input
+                    type="range"
+                    min={1}
+                    max={20}
+                    defaultValue={frameDuration}
+                    className="slider"
+                    onChange={(e) =>
+                      e.target && setFrameDuration(Number(e.target.value))
+                    }
+                  />
+                  <span>({frameDuration / 10} sec)</span>
+                </div>
+              </div>
             </div>
             <div className="column">
               {gifProgress && (
@@ -211,10 +299,9 @@ function Encoder() {
                   {gifProgress}%
                 </progress>
               )}
-              {gifProgress &&
-                log.map((item, index) => (
-                  <div key={`log-${index}`}>{item}</div>
-                ))}
+              {log.map((item, index) => (
+                <div key={`log-${index}`}>{item}</div>
+              ))}
             </div>
           </div>
 

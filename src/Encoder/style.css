@@ -5,3 +5,17 @@
 .result {
   margin: auto;
 }
+
+.settings {
+  font-size: 30px;
+}
+
+.control span {
+  font-size: 0.9em;
+  margin-left: 4px;
+  position: relative;
+  top: -2px;
+}
+.control input[type="range"]::-webkit-slider-thumb {
+  background: #00d1b2;
+}
