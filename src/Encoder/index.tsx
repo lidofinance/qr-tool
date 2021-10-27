@@ -116,6 +116,7 @@ const solmonReedChunks = (
 
 function Encoder() {
   const [blocksCount, setBlocksCount] = useState<number>(BLOCKS_COUNT);
+  const [exactFrames, setExactFrames] = useState<number[]>([]);
   const [extraBlocksCount, setExtraBlocksCount] =
     useState<number>(EXTRA_BLOCKS_COUNT);
   const [hovered, setHovered] = useState<boolean>(false);
@@ -174,7 +175,9 @@ function Encoder() {
     await addLog(`Creating GIF...`);
     gifshot.createGIF(
       {
-        images: images,
+        images: exactFrames.length
+          ? images.filter((_, index) => exactFrames.includes(index))
+          : images,
         gifWidth: IMAGE_SIZE,
         gifHeight: IMAGE_SIZE,
         numWorkers: 3,
@@ -226,21 +229,8 @@ function Encoder() {
                 </div>
               )}
             </Dropzone>
-            <div>
-              <input
-                className="button is-primary"
-                value="Encode"
-                onChange={() => {}}
-                onClick={() => encode()}
-              />
-              <input
-                className="button"
-                value="Settings"
-                onChange={() => {}}
-                onClick={() => encode()}
-              />
-            </div>
-            <div className="mt-5">
+
+            <div className="mt-4">
               <div className="field">
                 <label className="label">Blocks count</label>
                 <div className="control">
@@ -292,7 +282,40 @@ function Encoder() {
                   <span>({frameDuration / 10} sec)</span>
                 </div>
               </div>
+
+              <div className="field">
+                <label className="label">
+                  Include only the following frames
+                </label>
+                <div className="control">
+                  <input
+                    type="text"
+                    defaultValue=""
+                    className="input"
+                    onChange={(e) =>
+                      e.target &&
+                      setExactFrames(
+                        e.target.value
+                          .split(/\D+/gi)
+                          .filter(Boolean)
+                          .map((v) => Number(v))
+                      )
+                    }
+                    placeholder="Just put numbers here (if empty all frames are included)"
+                  />
+                </div>
+              </div>
             </div>
+
+            <div className="mt-4">
+              <input
+                className="button is-primary"
+                value="Encode"
+                onChange={() => {}}
+                onClick={() => encode()}
+              />
+            </div>
+
             <div className="column">
               {gifProgress && (
                 <progress className="progress" value={gifProgress} max="100">
