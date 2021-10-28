@@ -119,6 +119,7 @@ function Decoder() {
 
       tryProcessBlock(currentFrameIdx, currentBuffer.slice(8), opts);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentBuffer]);
 
   useEffect(() => {

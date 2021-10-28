@@ -182,9 +182,10 @@ class ReedSolomonCodec {
 
   correctErrata(msg: number[], synd: number[], pos: number[]) {
     var q = [1];
+    var x;
 
     for (let i = 0; i < pos.length; i++) {
-      var x = this.gf.gfExp[msg.length - 1 - pos[i]];
+      x = this.gf.gfExp[msg.length - 1 - pos[i]];
       q = this.gf.polyMul(q, [x, 1]);
     }
 
@@ -197,7 +198,7 @@ class ReedSolomonCodec {
     q = ReedSolomonUtils.sliceStep(q, q.length & 1, q.length, 2);
 
     for (let i = 0; i < pos.length; i++) {
-      var x = this.gf.gfExp[pos[i] + 256 - msg.length];
+      x = this.gf.gfExp[pos[i] + 256 - msg.length];
       var y = this.gf.polyEval(p, x);
       var z = this.gf.polyEval(q, this.gf.mul(x, x));
       msg[pos[i]] ^= this.gf.div(y, this.gf.mul(x, z));
