@@ -3,8 +3,8 @@ import { compress } from "mini-lz4";
 import Dropzone from "react-dropzone";
 import { BrowserQRCodeSvgWriter } from "@zxing/browser";
 import gifshot from "gifshot";
-import { FileType, generateDownload, stringToChunks } from "../utils";
-import ReedSolomon from "./reed-solomon";
+import { FileType, generateDownload, stringToChunks } from "../libs/utils";
+import ReedSolomon from "../libs/reed-solomon";
 import {
   BLOCKS_COUNT,
   CHUNK_SIZE,

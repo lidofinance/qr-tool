@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { BrowserQRCodeReader, IScannerControls } from "@zxing/browser";
 import { CHUNK_SIZE, COMPRESS_PAYLOAD } from "../config/coding";
-import ReedSolomon from "../Encoder/reed-solomon";
+import ReedSolomon from "../libs/reed-solomon";
 import { decompress } from "mini-lz4";
-import { FileType, generateDownload, uint8ArrayToString } from "../utils";
+import { FileType, generateDownload, uint8ArrayToString } from "../libs/utils";
 import "./style.css";
 
 function Decoder() {
