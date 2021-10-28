@@ -2,6 +2,14 @@
 
 This tool can be used to encode / decode data in QR-gifs
 
+## Installation
+
+```
+git clone git@github.com:lidofinance/qr-tool.git
+cd qr-tool
+yarn
+```
+
 ## Available Scripts
 
 In the project directory, you can run:
