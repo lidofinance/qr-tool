@@ -13,7 +13,7 @@ import {
   IMAGE_SIZE,
 } from "../config/coding";
 import asyncPool from "tiny-async-pool";
-
+import Tooltip from "./Tooltip";
 import "./style.css";
 
 const qrHints = new Map();
@@ -260,6 +260,9 @@ function Encoder() {
                     }
                   />
                   <span>({blocksCount})</span>
+                  <Tooltip text="Number of blocks after each will be placed extra error correction blocks">
+                    <span className="icon">?</span>
+                  </Tooltip>
                 </div>
               </div>
 
@@ -278,6 +281,9 @@ function Encoder() {
                     }
                   />
                   <span>({extraBlocksCount})</span>
+                  <Tooltip text="Number of extra-blocks for error correction process. N blocks will allow to have N/2 errors">
+                    <span className="icon">?</span>
+                  </Tooltip>
                 </div>
               </div>
 
@@ -295,6 +301,9 @@ function Encoder() {
                     }
                   />
                   <span>({frameDuration / 10} sec)</span>
+                  <Tooltip text="Delay between every next frame ">
+                    <span className="icon">?</span>
+                  </Tooltip>
                 </div>
               </div>
 

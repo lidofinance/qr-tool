@@ -16,3 +16,12 @@
 .control input[type="range"]::-webkit-slider-thumb {
   background: #00d1b2;
 }
+.icon {
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  background: #aaa;
+  font-size: 0.4em;
+  cursor: help;
+  font-weight: bold;
+  color: #fff;
+}

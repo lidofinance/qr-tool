@@ -1,0 +1,18 @@
+.tooltip {
+  position: relative;
+}
+.tooltip .tip {
+  display: none;
+  background: #888;
+  color: #fff;
+  position: absolute;
+  width: 200px;
+  padding: 4px;
+  font: normal 10px sans-serif;
+  left: 20px;
+  top: 20px;
+}
+
+.tooltip:hover .tip {
+  display: inline-block;
+}
