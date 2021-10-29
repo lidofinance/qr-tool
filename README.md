@@ -26,3 +26,7 @@ Builds the app for production to the `build` folder.
 ### `yarn compact`
 
 Generate compact html file in `build/index_compact.html` with all stuff bundled
+
+### Notes
+
+- may not work on mobile phone
