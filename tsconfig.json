@@ -14,7 +14,8 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": false,
-    "noEmit": true
+    "noEmit": false,
+    "rootDir": "src"
   },
   "include": ["src"]
 }
