@@ -6,3 +6,44 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+#encoderResult img {
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.settings {
+  font-size: 30px;
+}
+
+.control > span {
+  font-size: 0.9em;
+  margin-left: 4px;
+  position: relative;
+  top: -2px;
+}
+
+#decoder,
+#encoder {
+  display: none;
+}
+
+#decoder .progressBar {
+  width: 208px;
+}
+#preview {
+  transform: "scaleX(-1)";
+  width: 800px;
+  height: 600px;
+}
+#decoderResult {
+  display: none;
+}
+#decoderMissingFrames {
+  display: none;
+}
+#preview {
+  transform: scaleX(-1);
+}
+#decoderResultDownload {
+  display: none;
+}

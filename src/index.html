@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="apple-touch-icon" href="logo.png" />
+    <title>QR-Tool</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root">
+      <div class="App">
+        <div class="tabs">
+          <ul id="tabs">
+            <li>
+              <a href="#encoder">Encoder</a>
+            </li>
+            <li>
+              <a href="#decoder">Decoder</a>
+            </li>
+          </ul>
+        </div>
+        <include src="./Encoder/index.html"></include>
+        <include src="./Decoder/index.html"></include>
+      </div>
+    </div>
+    <script src="index.ts" type="module"></script>
+  </body>
+</html>

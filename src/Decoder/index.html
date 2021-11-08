@@ -1,0 +1,31 @@
+<div id="decoder">
+  <div class="container">
+    <div class="columns">
+      <div class="column is-one-quarter">
+        <decoder-file-panel id="decoderFilePanel"></decoder-file-panel>
+      </div>
+      <div class="column">
+        <input
+          type="text"
+          readonly="readOnly"
+          value=""
+          class="input"
+          placeholder="All frames are parsed"
+          id="decoderMissingFrames"
+        />
+        <decoder-progress-bar id="decoderProgressBar"></decoder-progress-bar>
+        <video id="preview"></video>
+        <textarea
+          class="textarea"
+          id="decoderResult"
+          readonly="readOnly"
+        ></textarea>
+        <div class="mt-3">
+          <button class="button is-primary" id="decoderResultDownload">
+            Download
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,61 @@
+<div id="encoder">
+  <div class="container">
+    <div class="columns">
+      <div class="column">
+        <textarea
+          class="textarea"
+          id="encoderData"
+          placeholder="Put your payload here or just drop your file here"
+        ></textarea>
+        <div class="mt-4">
+          <range-picker
+            id="encoderImageSize"
+            min="100"
+            max="500"
+            value="500"
+            title="Max image size"
+          ></range-picker>
+          <range-picker
+            id="encoderErrorCorrection"
+            min="10"
+            max="100"
+            value="30"
+            title="Error correction volume"
+          ></range-picker>
+
+          <range-picker
+            id="encoderFrameDelay"
+            min="1"
+            max="20"
+            value="2"
+            divider="10"
+            title="Frame delay"
+          ></range-picker>
+
+          <div class="field">
+            <label class="label"> Include only the following frames </label>
+            <div class="control">
+              <input type="text" class="input" id="encoderIncludeOnlyFrames" />
+            </div>
+          </div>
+        </div>
+        <div class="mt-4">
+          <input class="button is-primary" value="Encode" id="encodeStart" />
+        </div>
+        <div class="column">
+          <progress
+            class="progress"
+            value="0"
+            max="100"
+            id="encoderProgress"
+            style="display: none"
+          ></progress>
+          <div id="encoderLogs"></div>
+        </div>
+      </div>
+      <div class="column result">
+        <result-image id="encoderResult"></result-image>
+      </div>
+    </div>
+  </div>
+</div>

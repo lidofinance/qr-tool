@@ -8,43 +8,28 @@
     "bulma": "0.9.3",
     "gifshot": "0.4.5",
     "mini-lz4": "3.0.0",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "react-dropzone": "11.4.2",
-    "react-scripts": "4.0.3",
     "tiny-async-pool": "1.2.0",
     "typescript": "4.1.2"
   },
   "devDependencies": {
-    "inliner": "1.13.1",
     "@types/node": "12.0.0",
-    "@types/react": "17.0.0",
-    "@types/react-dom": "17.0.0",
-    "@types/tiny-async-pool": "1.0.0"
+    "@types/tiny-async-pool": "1.0.0",
+    "inliner": "1.13.1",
+    "parcel": "2.0.0",
+    "posthtml-include": "1.7.2",
+    "rimraf": "^3.0.2"
   },
   "license": "UNLICENSED",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "PUBLIC_URL=. GENERATE_SOURCEMAP=false INLINE_RUNTIME_CHUNK=true react-scripts build",
+    "start": "parcel --no-cache --port 3000 ./src/index.html ",
+    "build": "yarn clean && parcel build ./src/index.html --dist-dir ./build --no-source-maps --public-url '.'",
     "compact": "inliner build/index.html > build/index_compact.html",
-    "eject": "react-scripts eject"
+    "clean": "rimraf ./build/*"
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "airbnb"
     ]
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  }
+  "browserslist": "> 0.5%, last 2 versions, not dead"
 }
