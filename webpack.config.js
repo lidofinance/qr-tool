@@ -9,7 +9,8 @@ const HTMLInlineCSSWebpackPlugin =
   require("html-inline-css-webpack-plugin").default;
 
 module.exports = {
-  mode: "development",
+  mode: process.env.NODE_ENV || "development",
+  devtool: process.env.NODE_ENV === "production" ? false : "inline-source-map",
   entry: {
     main: "./src/index.ts",
   },
@@ -58,7 +59,7 @@ module.exports = {
   },
   performance: { hints: false },
   optimization: {
-    minimize: true,
+    minimize: process.env.NODE_ENV === "production",
     removeAvailableModules: true,
     usedExports: true,
     minimizer: [
@@ -68,5 +69,4 @@ module.exports = {
       }),
     ],
   },
-  mode: "production",
 };

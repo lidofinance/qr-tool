@@ -47,3 +47,11 @@ body {
 #decoderResultDownload {
   display: none;
 }
+
+#encoderAdvancedSettingsLink {
+  border-bottom: 1px dashed #aaa;
+}
+
+#encoderAdvancedSettings {
+  display: none;
+}

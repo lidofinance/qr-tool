@@ -17,6 +17,13 @@ const encoderDataEl = document.getElementById(
   "encoderData"
 ) as HTMLTextAreaElement;
 
+const encoderAdvancedSettingsLinkEl = document.getElementById(
+  "encoderAdvancedSettingsLink"
+) as HTMLAnchorElement;
+const encoderAdvancedSettingsEl = document.getElementById(
+  "encoderAdvancedSettings"
+) as HTMLDivElement;
+
 let filename: string;
 const qrHints = new Map();
 const qrEncoder = new BrowserQRCodeSvgWriter();
@@ -301,3 +308,21 @@ encoderDataEl.addEventListener("dragleave", function (event) {
   );
   this.className = "textarea";
 });
+
+encoderAdvancedSettingsLinkEl.onclick = () => {
+  if (
+    encoderAdvancedSettingsEl.style.display === "none" ||
+    !encoderAdvancedSettingsEl.style.display
+  ) {
+    encoderAdvancedSettingsEl.style.display = "block";
+    encoderAdvancedSettingsLinkEl.style.display = "none";
+  } else {
+    encoderAdvancedSettingsEl.style.display = "none";
+    encoderAdvancedSettingsLinkEl.style.display = "initial";
+  }
+};
+(
+  encoderAdvancedSettingsEl.getElementsByClassName(
+    "delete"
+  )[0] as HTMLDivElement
+).onclick = encoderAdvancedSettingsLinkEl.onclick;
