@@ -8,6 +8,10 @@
           placeholder="Put your payload here or just drop your file here"
         ></textarea>
         <div class="mt-4">
+          <a id="encoderAdvancedSettingsLink">Advanced options</a>
+        </div>
+        <div class="mt-2 notification" id="encoderAdvancedSettings">
+          <button class="delete"></button>
           <range-picker
             id="encoderImageSize"
             min="100"
@@ -39,6 +43,7 @@
             </div>
           </div>
         </div>
+
         <div class="mt-4">
           <input class="button is-primary" value="Encode" id="encodeStart" />
         </div>
