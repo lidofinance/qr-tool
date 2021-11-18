@@ -109,7 +109,6 @@ const getMissingFrames = () => {
 
 const updateMissingFrames = () => {
   const missingFrames = getMissingFrames();
-  console.log(">>", missingFrames);
   if (!missingFrames) {
     decoderMissingFramesEl.style.display = "none";
     return;
