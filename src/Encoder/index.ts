@@ -44,36 +44,38 @@ const createQR = (
   }
 ): Promise<string> =>
   new Promise((r) => {
-    const text = Buffer.concat([
-      Buffer.from(new Uint16Array([total, totalPlain, index]).buffer),
-      Buffer.from(new Uint8Array([blocksCount, extraBlocksCount]).buffer),
-      chunk,
-    ]);
-    const svg = qrEncoder.write(
-      text.toString("base64"),
-      IMAGE_SIZE,
-      IMAGE_SIZE,
-      qrHints
-    );
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("no ctx");
-    canvas.width = IMAGE_SIZE;
-    canvas.height = IMAGE_SIZE;
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, IMAGE_SIZE, IMAGE_SIZE);
-    ctx.fillStyle = "#000";
-    for (const rect of svg.getElementsByTagName("rect")) {
-      ctx.fillRect(
-        parseInt(rect.getAttribute("x") || "0"),
-        parseInt(rect.getAttribute("y") || "0"),
-        parseInt(rect.getAttribute("width") || "0"),
-        parseInt(rect.getAttribute("height") || "0")
+    setTimeout(() => {
+      const text = Buffer.concat([
+        Buffer.from(new Uint16Array([total, totalPlain, index]).buffer),
+        Buffer.from(new Uint8Array([blocksCount, extraBlocksCount]).buffer),
+        chunk,
+      ]);
+      const svg = qrEncoder.write(
+        text.toString("base64"),
+        IMAGE_SIZE,
+        IMAGE_SIZE,
+        qrHints
       );
-    }
-    const image = canvas.toDataURL();
-    canvas.remove();
-    r(image);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("no ctx");
+      canvas.width = IMAGE_SIZE;
+      canvas.height = IMAGE_SIZE;
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, IMAGE_SIZE, IMAGE_SIZE);
+      ctx.fillStyle = "#000";
+      for (const rect of svg.getElementsByTagName("rect")) {
+        ctx.fillRect(
+          parseInt(rect.getAttribute("x") || "0"),
+          parseInt(rect.getAttribute("y") || "0"),
+          parseInt(rect.getAttribute("width") || "0"),
+          parseInt(rect.getAttribute("height") || "0")
+        );
+      }
+      const image = canvas.toDataURL();
+      canvas.remove();
+      r(image);
+    }, 0);
   });
 
 const compressPayload = (payload: string): Uint8Array => {
