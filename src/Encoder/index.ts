@@ -1,8 +1,7 @@
 import { BrowserQRCodeSvgWriter } from "@zxing/browser";
-import gifshot from "gifshot";
-import { FileType, stringToChunks } from "../libs/utils";
+import gifEncoder from "gif-encoder-2";
+import { stringToChunks } from "../libs/utils";
 import { compress } from "mini-lz4";
-import asyncPool from "tiny-async-pool";
 import ReedSolomon from "../libs/reed-solomon";
 import {
   BLOCKS_COUNT,
@@ -42,7 +41,7 @@ const createQR = (
     total: number;
     totalPlain: number;
   }
-): Promise<string> =>
+): Promise<Uint8ClampedArray> =>
   new Promise((r) => {
     setTimeout(() => {
       const text = Buffer.concat([
@@ -72,7 +71,7 @@ const createQR = (
           parseInt(rect.getAttribute("height") || "0")
         );
       }
-      const image = canvas.toDataURL();
+      const image = ctx.getImageData(0, 0, IMAGE_SIZE, IMAGE_SIZE).data;
       canvas.remove();
       r(image);
     }, 0);
@@ -172,6 +171,7 @@ const setResultImage = (data: string | undefined) => {
 const encode = async () => {
   cleanLog();
   setResultImage(undefined);
+
   const { encoderData, encoderErrorCorrection, encoderFrameDelay } =
     collectInputValues([
       "encoderData",
@@ -191,6 +191,7 @@ const encode = async () => {
   const blocksCount = BLOCKS_COUNT;
   const extraBlocksCount =
     ((BLOCKS_COUNT * Number(encoderErrorCorrection)) / 100) | 0;
+  await addLog(`Filename: ${filename}`);
   await addLog(`extraBlocksCount ${extraBlocksCount}`);
   const fileNameHeader = Buffer.concat([
     Buffer.from([filename ? filename.length : 0]),
@@ -208,56 +209,47 @@ const encode = async () => {
   await addLog(`Creating qrs...`);
   setGifProgress(10);
 
-  const images = await asyncPool(
-    10,
-    chunks.map((chunk, index) => ({ data: chunk, index })),
-    (chunk) => {
-      return createQR(chunk.data, {
-        index: chunk.index,
-        total: chunks.length,
-        totalPlain: parts.length,
-        blocksCount,
-        extraBlocksCount,
-      });
-    }
-  );
-  setGifProgress(20);
+  const fileredChunks = exactFrames.length
+    ? chunks.filter((_, index) => exactFrames.includes(index))
+    : chunks;
 
-  const imagesToProcess = exactFrames.length
-    ? images.filter((_, index) => exactFrames.includes(index))
-    : images;
-
-  await addLog(
-    `Creating GIF from ${
-      imagesToProcess.length
-    } images (filter: ${JSON.stringify(
-      exactFrames
-    )}) frame duration: ${frameDuration}`
-  );
-  if (!imagesToProcess.length) {
+  if (!fileredChunks.length) {
     await addLog(`😖 No frames to include into gif`);
     setGifProgress(undefined);
     return;
   }
-
-  gifshot.createGIF(
-    {
-      images: imagesToProcess,
-      gifWidth: IMAGE_SIZE,
-      gifHeight: IMAGE_SIZE,
-      numWorkers: 3,
-      progressCallback: function (captureProgress: any) {
-        setGifProgress((captureProgress * 80 + 20) | 0);
-      },
-      frameDuration: frameDuration * 10,
-    },
-    function (obj: { error: any; image: any }) {
-      if (!obj.error) {
-        setGifProgress(undefined);
-        setResultImage(obj.image);
-      }
-    }
+  const encoder = new gifEncoder(
+    IMAGE_SIZE,
+    IMAGE_SIZE,
+    "neuquant",
+    false,
+    fileredChunks.length
   );
+  encoder.start();
+  encoder.setRepeat(0);
+  encoder.on("progress", (percent: number) => {
+    setGifProgress(10 + percent * 0.9);
+  });
+  encoder.setDelay(frameDuration * 1000);
+  await Promise.all(
+    fileredChunks.map((chunk, index) => {
+      return createQR(chunk, {
+        index: index,
+        total: chunks.length,
+        totalPlain: parts.length,
+        blocksCount,
+        extraBlocksCount,
+      }).then((image) => {
+        encoder.addFrame(image);
+      });
+    })
+  );
+  encoder.finish();
+  setResultImage(
+    "data:image/gif;base64, " +
+      Buffer.from(encoder.out.getData().buffer).toString("base64")
+  );
+  setGifProgress(undefined);
 };
 
 document
