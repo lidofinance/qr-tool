@@ -1,3 +1,27 @@
+name: Release
+permissions:
+  contents: write
+on:
+  push:
+    tags:
+      - "*"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - run: yarn --frozen-lockfile
+      - run: yarn build
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/index.html
+
 name: Build
 on: 
   push:
@@ -15,8 +39,3 @@ jobs:
         uses: actions/checkout@v2
       - run: yarn --frozen-lockfile
       - run: yarn build
-      - name: Save bundled html
-        uses: actions/upload-artifact@v2
-        with:
-          name: Bundle
-          path: build/index.html
