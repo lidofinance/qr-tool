@@ -204,7 +204,9 @@ const encode = async () => {
   const parts = stringToChunks(compressedPayload, CHUNK_SIZE);
   await addLog(`Chunks before: ${parts.length}`);
   setGifProgress(5);
-  const chunks = solmonReedChunks(parts, { blocksCount, extraBlocksCount });
+  const chunks = solmonReedChunks(parts, { blocksCount, extraBlocksCount }).map(
+    (chunk, index) => ({ chunk, index })
+  );
   await addLog(`Chunks count ${chunks.length}`);
   await addLog(`Creating qrs...`);
   setGifProgress(10);
@@ -232,7 +234,7 @@ const encode = async () => {
   });
   encoder.setDelay(frameDuration * 1000);
   await Promise.all(
-    fileredChunks.map((chunk, index) => {
+    fileredChunks.map(({ chunk, index }) => {
       return createQR(chunk, {
         index: index,
         total: chunks.length,
