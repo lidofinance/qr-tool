@@ -276,7 +276,7 @@ encoderDataEl.addEventListener("drop", function (event) {
     const item = event.dataTransfer.items[0];
     const file = item.getAsFile();
     if (!file) return;
-    filename = file.name.substr(0, 255);
+    filename = file.name.substring(0, 255);
     (async () => {
       const contents = await file?.text();
       const textareaEL = document.getElementById(
@@ -284,6 +284,9 @@ encoderDataEl.addEventListener("drop", function (event) {
       ) as HTMLTextAreaElement;
       if (!textareaEL || !contents) return;
       textareaEL.value = contents;
+      cleanLog();
+      await addLog(`File added: ${filename}; Size: ${contents.length}`);
+      setResultImage(undefined);
     })();
   }
 });
