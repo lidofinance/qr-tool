@@ -211,11 +211,11 @@ const encode = async () => {
   await addLog(`Creating qrs...`);
   setGifProgress(10);
 
-  const fileredChunks = exactFrames.length
+  const filteredChunks = exactFrames.length
     ? chunks.filter((_, index) => exactFrames.includes(index))
     : chunks;
 
-  if (!fileredChunks.length) {
+  if (!filteredChunks.length) {
     await addLog(`😖 No frames to include into gif`);
     setGifProgress(undefined);
     return;
@@ -225,7 +225,7 @@ const encode = async () => {
     IMAGE_SIZE,
     "neuquant",
     false,
-    fileredChunks.length
+    filteredChunks.length
   );
   encoder.start();
   encoder.setRepeat(0);
@@ -234,7 +234,7 @@ const encode = async () => {
   });
   encoder.setDelay(frameDuration * 1000);
   await Promise.all(
-    fileredChunks.map(({ chunk, index }) => {
+    filteredChunks.map(({ chunk, index }) => {
       return createQR(chunk, {
         index: index,
         total: chunks.length,
