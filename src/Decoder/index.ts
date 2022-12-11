@@ -1,5 +1,5 @@
 import { BrowserQRCodeReader, IScannerControls } from "@zxing/browser";
-import { decompress } from "mini-lz4";
+import { decompress } from "lz4js";
 import { CHUNK_SIZE, COMPRESS_PAYLOAD } from "../config/coding";
 import ReedSolomon from "../libs/reed-solomon";
 import { FileType, generateDownload, uint8ArrayToString } from "../libs/utils";

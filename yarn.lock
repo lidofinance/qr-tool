@@ -1320,11 +1320,6 @@ get-stream@^6.0.0:
   resolved "https://registry.yarnpkg.com/get-stream/-/get-stream-6.0.1.tgz#a262d8eef67aced57c2852ad6167526a43cbf7b7"
   integrity sha512-ts6Wi+2j3jQjqi70w5AlN8DFnkSwC+MqmxEzdEALB2qXZYV3X/b1CTfgPLGJNMeAWxdPfU8FO1ms3NUfaHCPYg==
 
-gif-encoder-2@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/gif-encoder-2/-/gif-encoder-2-1.0.5.tgz#872ae04d8028de4a3417646ceb80dda88d6247b9"
-  integrity sha512-fsRAKbZuUoZ7FYGjpFElmflTkKwsn/CzAmL/xDl4558aTAgysIDCUF6AXWO8dmai/ApfZACbPVAM+vPezJXlFg==
-
 glob-parent@^5.1.2, glob-parent@~5.1.2:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/glob-parent/-/glob-parent-5.1.2.tgz#869832c58034fe68a4093c17dc15e8340d8401c4"
@@ -1832,6 +1827,11 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
+lz4js@0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/lz4js/-/lz4js-0.2.0.tgz#09f1a397cb2158f675146c3351dde85058cb322f"
+  integrity sha512-gY2Ia9Lm7Ep8qMiuGRhvUq0Q7qUereeldZPP1PMEJxPtEWHJLqw9pgX68oHajBH0nzJK4MaZEA/YNV3jT8u8Bg==
+
 mdn-data@2.0.14:
   version "2.0.14"
   resolved "https://registry.yarnpkg.com/mdn-data/-/mdn-data-2.0.14.tgz#7113fc4281917d63ce29b43446f701e68c25ba50"
@@ -1910,11 +1910,6 @@ mini-css-extract-plugin@2.4.4:
   integrity sha512-UJ+aNuFQaQaECu7AamlWOBLj2cJ6XSGU4zNiqXeZ7lZLe5VD0DoSPWFbWArXueo+6FZVbgHzpX9lUIaBIDLuYg==
   dependencies:
     schema-utils "^3.1.0"
-
-mini-lz4@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/mini-lz4/-/mini-lz4-3.0.0.tgz#17c2dfad91fdbfeeb146a9c8ffba2263248ba374"
-  integrity sha512-rZCBiCAJBBs8TXB1V6c6vJAf4JriFJ1+RObcPwaf161px6u3M0O9LJbQURZiPR5tHBWjfz59UmPT6GgUQNsChQ==
 
 minimalistic-assert@^1.0.0:
   version "1.0.1"

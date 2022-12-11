@@ -1,7 +1,6 @@
 import { BrowserQRCodeSvgWriter } from "@zxing/browser";
-import gifEncoder from "gif-encoder-2";
 import { stringToChunks } from "../libs/utils";
-import { compress } from "mini-lz4";
+import { compress } from "lz4js";
 import ReedSolomon from "../libs/reed-solomon";
 import {
   BLOCKS_COUNT,
@@ -16,66 +15,98 @@ const encoderDataEl = document.getElementById(
   "encoderData"
 ) as HTMLTextAreaElement;
 
-const encoderAdvancedSettingsLinkEl = document.getElementById(
-  "encoderAdvancedSettingsLink"
-) as HTMLAnchorElement;
-const encoderAdvancedSettingsEl = document.getElementById(
-  "encoderAdvancedSettings"
-) as HTMLDivElement;
-
 let filename: string;
 const qrHints = new Map();
 const qrEncoder = new BrowserQRCodeSvgWriter();
-const createQR = (
-  chunk: Uint8Array,
+
+let qrAnimationTimer: number;
+
+const pauseQRAnimation = () => {
+  clearTimeout(qrAnimationTimer);
+};
+
+const encoderFrameDelay = document.getElementById(
+  "encoderFrameDelay"
+) as HTMLInputElement;
+const encoderImageSize = document.getElementById(
+  "encoderImageSize"
+) as HTMLInputElement;
+
+const getFrameDelayMs = () => {
+  const value = encoderFrameDelay.getAttribute("value");
+  return Number(value) * 1000;
+};
+
+const getMaxImageSize = () => {
+  const value = encoderImageSize.getAttribute("value");
+  return Number(value);
+};
+
+const playQRAnimation = (
+  frameElement: HTMLElement,
+  progressElement: HTMLInputElement,
+  encodedResult: {
+    chunks: { chunk: Uint8Array; index: number }[];
+    total: number;
+    totalPlain: number;
+    blocksCount: number;
+    extraBlocksCount: number;
+  },
+  index = 0
+) => {
+  pauseQRAnimation();
+
+  const frameDelay = getFrameDelayMs();
+  const { chunks, ...meta } = encodedResult;
+  const chunk = chunks[index];
+
+  drawFrame(frameElement, progressElement, chunk, meta);
+
+  // next frame
+  qrAnimationTimer = setTimeout(() => {
+    const nextIndex = index + 1 < chunks.length ? index + 1 : 0;
+    playQRAnimation(frameElement, progressElement, encodedResult, nextIndex);
+  }, frameDelay) as any;
+};
+
+const drawFrame = (
+  frameElement: HTMLElement,
+  progressElement: HTMLInputElement,
   {
     index,
-    total,
-    totalPlain,
+    chunk,
+  }: {
+    index: number;
+    chunk: Uint8Array;
+  },
+  {
     blocksCount,
     extraBlocksCount,
+    total,
+    totalPlain,
   }: {
     blocksCount: number;
     extraBlocksCount: number;
-    index: number;
     total: number;
     totalPlain: number;
   }
-): Promise<Uint8ClampedArray> =>
-  new Promise((r) => {
-    setTimeout(() => {
-      const text = Buffer.concat([
-        Buffer.from(new Uint16Array([total, totalPlain, index]).buffer),
-        Buffer.from(new Uint8Array([blocksCount, extraBlocksCount]).buffer),
-        chunk,
-      ]);
-      const svg = qrEncoder.write(
-        text.toString("base64"),
-        IMAGE_SIZE,
-        IMAGE_SIZE,
-        qrHints
-      );
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("no ctx");
-      canvas.width = IMAGE_SIZE;
-      canvas.height = IMAGE_SIZE;
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, IMAGE_SIZE, IMAGE_SIZE);
-      ctx.fillStyle = "#000";
-      for (const rect of svg.getElementsByTagName("rect")) {
-        ctx.fillRect(
-          parseInt(rect.getAttribute("x") || "0"),
-          parseInt(rect.getAttribute("y") || "0"),
-          parseInt(rect.getAttribute("width") || "0"),
-          parseInt(rect.getAttribute("height") || "0")
-        );
-      }
-      const image = ctx.getImageData(0, 0, IMAGE_SIZE, IMAGE_SIZE).data;
-      canvas.remove();
-      r(image);
-    }, 0);
-  });
+) => {
+  const imageSize = getMaxImageSize();
+  const text = Buffer.concat([
+    Buffer.from(new Uint16Array([total, totalPlain, index]).buffer),
+    Buffer.from(new Uint8Array([blocksCount, extraBlocksCount]).buffer),
+    chunk,
+  ]);
+
+  const contents = text.toString("base64");
+  const svg = qrEncoder.write(contents, imageSize, imageSize, qrHints);
+
+  frameElement.innerHTML = "";
+  frameElement.innerHTML = svg.outerHTML;
+
+  progressElement.value = String(index);
+  progressElement.setAttribute("max", String(total));
+};
 
 const compressPayload = (payload: string): Uint8Array => {
   return COMPRESS_PAYLOAD ? compress(payload) : Buffer.from(payload);
@@ -136,13 +167,14 @@ const collectInputValues = (ids: string[]) => {
 };
 
 const setGifProgress = (v: number | undefined) => {
+  const wr = document.getElementById("encoderStartSettings");
   const el = document.getElementById("encoderProgress");
-  if (!el) return;
-  if (!v) {
-    el.style.display = "none";
+  if (!wr || !el) return;
+  if (v == null) {
+    wr.classList.remove("encoder-progress");
     return;
   }
-  el.style.display = "block";
+  wr.classList.add("encoder-progress");
   el.setAttribute("value", v.toString());
 };
 
@@ -161,33 +193,15 @@ const cleanLog = () => {
   el.innerHTML = "";
 };
 
-const setResultImage = (data: string | undefined) => {
-  const el = document.getElementById("encoderResult");
-  if (!el) return;
-  el.setAttribute("name", filename || "");
-  el.setAttribute("src", data || "");
-};
-
 const encode = async () => {
   cleanLog();
-  setResultImage(undefined);
 
-  const { encoderData, encoderErrorCorrection, encoderFrameDelay } =
-    collectInputValues([
-      "encoderData",
-      "encoderErrorCorrection",
-      "encoderFrameDelay",
-    ]);
-  if (!encoderData || !encoderErrorCorrection || !encoderFrameDelay) return;
-  const { encoderIncludeOnlyFrames } = collectInputValues([
-    "encoderIncludeOnlyFrames",
+  const { encoderData, encoderErrorCorrection } = collectInputValues([
+    "encoderData",
+    "encoderErrorCorrection",
   ]);
-  const frameDuration = Number(encoderFrameDelay) / 10;
-  const exactFrames = encoderIncludeOnlyFrames
-    .toString()
-    .split(/\D+/)
-    .filter((v) => v !== "")
-    .map(Number);
+  if (!encoderData || !encoderErrorCorrection) return;
+
   const blocksCount = BLOCKS_COUNT;
   const extraBlocksCount =
     ((BLOCKS_COUNT * Number(encoderErrorCorrection)) / 100) | 0;
@@ -200,57 +214,51 @@ const encode = async () => {
   const payload = fileNameHeader.toString() + encoderData.toString();
   const compressedPayload = compressPayload(payload);
   await addLog(`Compressed length: ${compressedPayload.length}`);
-  setGifProgress(2);
+  setGifProgress(20);
   const parts = stringToChunks(compressedPayload, CHUNK_SIZE);
   await addLog(`Chunks before: ${parts.length}`);
-  setGifProgress(5);
+  setGifProgress(50);
   const chunks = solmonReedChunks(parts, { blocksCount, extraBlocksCount }).map(
     (chunk, index) => ({ chunk, index })
   );
-  await addLog(`Chunks count ${chunks.length}`);
-  await addLog(`Creating qrs...`);
-  setGifProgress(10);
+  await addLog(`Chunks count: ${chunks.length}`);
+  setGifProgress(100);
 
-  const filteredChunks = exactFrames.length
-    ? chunks.filter((_, index) => exactFrames.includes(index))
-    : chunks;
-
-  if (!filteredChunks.length) {
+  if (!chunks.length) {
     await addLog(`😖 No frames to include into gif`);
     setGifProgress(undefined);
     return;
   }
-  const encoder = new gifEncoder(
-    IMAGE_SIZE,
-    IMAGE_SIZE,
-    "neuquant",
-    false,
-    filteredChunks.length
-  );
-  encoder.start();
-  encoder.setRepeat(0);
-  encoder.on("progress", (percent: number) => {
-    setGifProgress(10 + percent * 0.9);
-  });
-  encoder.setDelay(frameDuration * 1000);
-  await Promise.all(
-    filteredChunks.map(({ chunk, index }) => {
-      return createQR(chunk, {
-        index: index,
-        total: chunks.length,
-        totalPlain: parts.length,
-        blocksCount,
-        extraBlocksCount,
-      }).then((image) => {
-        encoder.addFrame(image);
-      });
-    })
-  );
-  encoder.finish();
-  setResultImage(
-    "data:image/gif;base64, " +
-      Buffer.from(encoder.out.getData().buffer).toString("base64")
-  );
+
+  const frameElement = document.getElementById("encoderFrame");
+  const progressElement = document
+    .getElementById("encoderPlayProgress")
+    ?.querySelector("input");
+
+  if (frameElement && progressElement) {
+    const meta = {
+      chunks,
+      total: chunks.length,
+      totalPlain: parts.length,
+      blocksCount,
+      extraBlocksCount,
+    };
+
+    playQRAnimation(frameElement, progressElement, meta);
+
+    progressElement.onmousedown = (event: Event) => {
+      if (!(event.target instanceof HTMLInputElement)) return;
+      pauseQRAnimation();
+    };
+
+    progressElement.onmouseup = (event: Event) => {
+      if (!(event.target instanceof HTMLInputElement)) return;
+
+      const index = Number(event.target.value);
+      playQRAnimation(frameElement, progressElement, meta, index);
+    };
+  }
+
   setGifProgress(undefined);
 };
 
@@ -258,13 +266,13 @@ document
   .getElementById("encodeStart")
   ?.addEventListener("click", () => encode());
 
-document
-  .getElementById("encoderImageSize")
-  ?.addEventListener("change", function () {
-    const value = this.getAttribute("value");
-    const el = document.getElementById("encoderResult");
-    el?.setAttribute("max-width", `${value}px`);
-  });
+// document
+//   .getElementById("encoderImageSize")
+//   ?.addEventListener("change", function () {
+//     const value = this.getAttribute("value");
+//     const el = document.getElementById("encoderResult");
+//     el?.setAttribute("max-width", `${value}px`);
+//   });
 
 encoderDataEl.addEventListener("drop", function (event) {
   event.preventDefault();
@@ -286,7 +294,6 @@ encoderDataEl.addEventListener("drop", function (event) {
       textareaEL.value = contents;
       cleanLog();
       await addLog(`File added: ${filename}; Size: ${contents.length}`);
-      setResultImage(undefined);
     })();
   }
 });
@@ -307,21 +314,3 @@ encoderDataEl.addEventListener("dragleave", function (event) {
   );
   this.className = "textarea";
 });
-
-encoderAdvancedSettingsLinkEl.onclick = () => {
-  if (
-    encoderAdvancedSettingsEl.style.display === "none" ||
-    !encoderAdvancedSettingsEl.style.display
-  ) {
-    encoderAdvancedSettingsEl.style.display = "block";
-    encoderAdvancedSettingsLinkEl.style.display = "none";
-  } else {
-    encoderAdvancedSettingsEl.style.display = "none";
-    encoderAdvancedSettingsLinkEl.style.display = "initial";
-  }
-};
-(
-  encoderAdvancedSettingsEl.getElementsByClassName(
-    "delete"
-  )[0] as HTMLDivElement
-).onclick = encoderAdvancedSettingsLinkEl.onclick;

@@ -6,18 +6,21 @@ class DecoderProgressBar extends HTMLElement {
         display: none;
     }    
     .frameItem {
-      border: 1px solid #eee;
+      border: 2px solid #fff;
       margin: 1px;
       display: inline-block;
       background: #330000;
-      width: 6px;
-      height: 6px;
+      width: 4px;
+      height: 4px;
     }
     .done {
       background-color: #00cc00;
     }
     .active {
       background: red !important;
+      outline: 3px solid red;
+      outline-offset: -2px;
+      border-radius: 2px;
     }
     </style>
     <div class="progressBar"></div>
