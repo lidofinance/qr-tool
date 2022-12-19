@@ -39,7 +39,7 @@
       </div>
     </div>
     <div class="columns columns-config">
-      <div class="column">
+      <div class="column is-narrow">
         <range-picker
           id="encoderFrameDelay"
           min="0.05"
@@ -49,7 +49,7 @@
           title="Frame delay"
         ></range-picker>
       </div>
-      <div class="column">
+      <div class="column is-narrow">
         <range-picker
           id="encoderImageSize"
           min="100"
@@ -67,6 +67,7 @@
         value="0"
         title="Play progress"
       ></range-picker>
+      <range-ruler id="encoderPlayRuler" min="0" max="0"></range-ruler>
     </div>
   </div>
 </div>

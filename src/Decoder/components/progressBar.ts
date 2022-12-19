@@ -73,9 +73,12 @@ class DecoderProgressBar extends HTMLElement {
     progressBar.style.display = "block";
     for (let i = 0; i < Number(total); i++) {
       const item = document.createElement("div");
-      item.className = `frameItem ${i === current && "active"} ${
-        done.includes(i) && "done"
-      }`;
+
+      item.classList.add("frameItem");
+      if (i === current) item.classList.add("active");
+      if (done.includes(i)) item.classList.add("done");
+
+      item.title = String(i);
       progressBar.appendChild(item);
     }
   }

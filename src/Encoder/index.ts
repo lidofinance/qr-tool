@@ -9,6 +9,7 @@ import {
   IMAGE_SIZE,
 } from "../config/coding";
 import "./components/rangePicker";
+import "./components/rangeRuler";
 import "./components/resultImage";
 
 const encoderDataEl = document.getElementById(
@@ -31,6 +32,16 @@ const encoderFrameDelay = document.getElementById(
 const encoderImageSize = document.getElementById(
   "encoderImageSize"
 ) as HTMLInputElement;
+const progressElement = document.getElementById(
+  "encoderPlayProgress"
+) as HTMLInputElement;
+const progressElementInput = progressElement.querySelector(
+  ".slider"
+) as HTMLInputElement;
+const progressRuler = document.getElementById(
+  "encoderPlayRuler"
+) as HTMLInputElement;
+const frameElement = document.getElementById("encoderFrame") as HTMLElement;
 
 const getFrameDelayMs = () => {
   const value = encoderFrameDelay.getAttribute("value");
@@ -43,8 +54,6 @@ const getMaxImageSize = () => {
 };
 
 const playQRAnimation = (
-  frameElement: HTMLElement,
-  progressElement: HTMLInputElement,
   encodedResult: {
     chunks: { chunk: Uint8Array; index: number }[];
     total: number;
@@ -60,18 +69,16 @@ const playQRAnimation = (
   const { chunks, ...meta } = encodedResult;
   const chunk = chunks[index];
 
-  drawFrame(frameElement, progressElement, chunk, meta);
+  drawFrame(chunk, meta);
 
   // next frame
   qrAnimationTimer = setTimeout(() => {
     const nextIndex = index + 1 < chunks.length ? index + 1 : 0;
-    playQRAnimation(frameElement, progressElement, encodedResult, nextIndex);
+    playQRAnimation(encodedResult, nextIndex);
   }, frameDelay) as any;
 };
 
 const drawFrame = (
-  frameElement: HTMLElement,
-  progressElement: HTMLInputElement,
   {
     index,
     chunk,
@@ -104,8 +111,12 @@ const drawFrame = (
   frameElement.innerHTML = "";
   frameElement.innerHTML = svg.outerHTML;
 
-  progressElement.value = String(index);
-  progressElement.setAttribute("max", String(total));
+  progressElement.setAttribute("value", String(index));
+  progressElement.setAttribute("min", String(0));
+  progressElement.setAttribute("max", String(total - 1));
+
+  progressRuler.setAttribute("min", String(0));
+  progressRuler.setAttribute("max", String(total - 1));
 };
 
 const compressPayload = (payload: string): Uint8Array => {
@@ -230,34 +241,27 @@ const encode = async () => {
     return;
   }
 
-  const frameElement = document.getElementById("encoderFrame");
-  const progressElement = document
-    .getElementById("encoderPlayProgress")
-    ?.querySelector("input");
+  const meta = {
+    chunks,
+    total: chunks.length,
+    totalPlain: parts.length,
+    blocksCount,
+    extraBlocksCount,
+  };
 
-  if (frameElement && progressElement) {
-    const meta = {
-      chunks,
-      total: chunks.length,
-      totalPlain: parts.length,
-      blocksCount,
-      extraBlocksCount,
-    };
+  playQRAnimation(meta);
 
-    playQRAnimation(frameElement, progressElement, meta);
+  progressElementInput.onmousedown = (event: Event) => {
+    if (!(event.target instanceof HTMLInputElement)) return;
+    pauseQRAnimation();
+  };
 
-    progressElement.onmousedown = (event: Event) => {
-      if (!(event.target instanceof HTMLInputElement)) return;
-      pauseQRAnimation();
-    };
+  progressElementInput.onmouseup = (event: Event) => {
+    if (!(event.target instanceof HTMLInputElement)) return;
 
-    progressElement.onmouseup = (event: Event) => {
-      if (!(event.target instanceof HTMLInputElement)) return;
-
-      const index = Number(event.target.value);
-      playQRAnimation(frameElement, progressElement, meta, index);
-    };
-  }
+    const index = Number(event.target.value);
+    playQRAnimation(meta, index);
+  };
 
   setGifProgress(undefined);
 };
@@ -265,14 +269,6 @@ const encode = async () => {
 document
   .getElementById("encodeStart")
   ?.addEventListener("click", () => encode());
-
-// document
-//   .getElementById("encoderImageSize")
-//   ?.addEventListener("change", function () {
-//     const value = this.getAttribute("value");
-//     const el = document.getElementById("encoderResult");
-//     el?.setAttribute("max-width", `${value}px`);
-//   });
 
 encoderDataEl.addEventListener("drop", function (event) {
   event.preventDefault();

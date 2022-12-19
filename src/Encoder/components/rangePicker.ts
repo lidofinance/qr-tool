@@ -61,7 +61,30 @@ class RangePicker extends HTMLElement {
   ) {
     if (newValue !== oldValue) {
       this.setAttribute(attrName, newValue);
+      this.render();
     }
+  }
+
+  render() {
+    const { shadowRoot } = this;
+    const value = this.getAttribute("value") ?? "";
+    const step = this.getAttribute("step") ?? "";
+    const min = this.getAttribute("min") ?? "";
+    const max = this.getAttribute("max") ?? "";
+    const title = this.getAttribute("title") ?? "";
+
+    const display = this.querySelector(".value") as HTMLSpanElement;
+    const slider = this.querySelector(".slider") as HTMLInputElement;
+    const label = this.querySelector(".label") as HTMLInputElement;
+
+    slider.setAttribute("step", step);
+    slider.setAttribute("min", min);
+    slider.setAttribute("max", max);
+    slider.setAttribute("value", value);
+    slider.value = value;
+
+    label.innerHTML = title;
+    display.innerHTML = value;
   }
 }
 

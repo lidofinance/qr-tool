@@ -47,8 +47,10 @@ body {
   width: 100%;
 }
 
-#encoderPlayProgress span {
-  display: none;
+#encoderPlayProgress .control > span {
+  position: absolute;
+  top: -26px;
+  right: 0;
 }
 
 .encodeColumnStart {
@@ -58,10 +60,6 @@ body {
 #encoderFrame svg {
   display: block;
   border: 1px solid #dbdbdb;
-}
-
-.columns-config {
-  width: 450px;
 }
 
 #encoderProgress {

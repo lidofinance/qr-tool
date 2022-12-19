@@ -21,6 +21,7 @@
     "html-loader": "3.0.1",
     "html-webpack-plugin": "5.5.0",
     "inline-chunk-html-plugin": "1.1.1",
+    "inliner": "^1.13.1",
     "mini-css-extract-plugin": "2.4.4",
     "process": "0.11.10",
     "rimraf": "3.0.2",
