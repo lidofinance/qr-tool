@@ -18,7 +18,7 @@ type EncodeMeta = {
   totalPlain: number;
   blocksCount: number;
   extraBlocksCount: number;
-}
+};
 
 const encoderDataEl = document.getElementById(
   "encoderData"
@@ -53,29 +53,31 @@ const progressRuler = document.getElementById(
 ) as HTMLInputElement;
 const frameElement = document.getElementById("encoderFrame") as HTMLElement;
 const encoderTimer = document.getElementById("encoderTimer") as HTMLElement;
-const playPauseButton = document.getElementById("playPause") as HTMLButtonElement;
+const playPauseButton = document.getElementById(
+  "playPause"
+) as HTMLButtonElement;
 
 const playPause = {
   isPlaying: false,
   buttonSubscribe(getMeta: () => EncodeMeta) {
-    playPauseButton.addEventListener('click', (event) => {
+    playPauseButton.addEventListener("click", (event) => {
       if (!(event.target instanceof HTMLInputElement)) return;
-      
-      if (this.isPlaying) this.pause()
+
+      if (this.isPlaying) this.pause();
       else this.play(getMeta());
-    })
+    });
   },
   pause() {
     pauseQRAnimation();
     this.isPlaying = false;
-    playPauseButton.setAttribute('value', 'Play');
+    playPauseButton.setAttribute("value", "Play");
   },
   play(meta: EncodeMeta) {
     playQRAnimation(meta, currentChunkIndex);
     this.isPlaying = true;
-    playPauseButton.setAttribute('value', 'Pause');
-  }
-}
+    playPauseButton.setAttribute("value", "Pause");
+  },
+};
 
 const getFrameDelayMs = () => {
   const value = encoderFrameDelay.getAttribute("value");
@@ -88,7 +90,7 @@ const getMaxImageSize = () => {
 };
 
 const getEncoderTimer = () => {
-  if (!totalChunks || !currentChunkIndex) return '00:00';
+  if (!totalChunks || !currentChunkIndex) return "00:00";
 
   const frameDelayMs = getFrameDelayMs();
   const totalMs = totalChunks * frameDelayMs;
@@ -98,13 +100,10 @@ const getEncoderTimer = () => {
   const minutes = Math.floor(leftMs / 60000);
   const seconds = ((leftMs % 60000) / 1000).toFixed(0);
 
-  return minutes + ":" + (Number(seconds) < 10 ? '0' : '') + seconds;
-}
+  return minutes + ":" + (Number(seconds) < 10 ? "0" : "") + seconds;
+};
 
-const playQRAnimation = (
-  encodedResult: EncodeMeta,
-  index = 0
-) => {
+const playQRAnimation = (encodedResult: EncodeMeta, index = 0) => {
   pauseQRAnimation();
 
   const frameDelay = getFrameDelayMs();
@@ -261,7 +260,7 @@ const encode = async () => {
   const blocksCount = BLOCKS_COUNT;
   const extraBlocksCount =
     ((BLOCKS_COUNT * Number(encoderErrorCorrection)) / 100) | 0;
-  await addLog(`Filename: ${filename || ''}`);
+  await addLog(`Filename: ${filename || ""}`);
   await addLog(`extraBlocksCount ${extraBlocksCount}`);
   const fileNameHeader = Buffer.concat([
     Buffer.from([filename ? filename.length : 0]),
@@ -293,7 +292,7 @@ const encode = async () => {
     blocksCount,
     extraBlocksCount,
   };
-  totalChunks =  chunks.length;
+  totalChunks = chunks.length;
 
   playQRAnimation(meta);
   playPause.play(meta);
@@ -311,7 +310,7 @@ const encode = async () => {
     if (playPause.isPlaying) playQRAnimation(meta, index);
   };
 
-  playPause.buttonSubscribe(() => meta)
+  playPause.buttonSubscribe(() => meta);
 
   setGifProgress(undefined);
 };
