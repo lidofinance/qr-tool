@@ -6,10 +6,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-#encoderResult img {
-  border: 1px solid #ccc;
-  cursor: pointer;
-}
 
 .settings {
   font-size: 30px;
@@ -47,10 +43,44 @@ body {
   display: none;
 }
 
-#encoderAdvancedSettingsLink {
-  border-bottom: 1px dashed #aaa;
+#encoderPlayProgress .slider {
+  width: 100%;
 }
 
-#encoderAdvancedSettings {
+#encoderPlayProgress .control > span {
+  position: absolute;
+  top: -26px;
+  right: 0;
+}
+
+.encodeColumnStart {
+  flex-grow: 0;
+}
+
+#encoderFrame svg {
+  display: block;
+  border: 1px solid #dbdbdb;
+}
+
+#encoderProgress {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 50%;
+  margin-top: -8px;
+  width: auto;
   display: none;
+}
+
+#encoderStartSettings .columns {
+  align-items: center;
+}
+
+.encoder-progress #encoderProgress {
+  display: block;
+}
+
+.encoder-progress .columns {
+  opacity: 0;
+  pointer-events: none;
 }
