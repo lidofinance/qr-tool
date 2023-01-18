@@ -79,6 +79,7 @@ class DecoderProgressBar extends HTMLElement {
       if (done.includes(i)) item.classList.add("done");
 
       item.title = String(i);
+      item.id = String(i);
       progressBar.appendChild(item);
     }
   }

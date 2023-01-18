@@ -43,6 +43,16 @@ body {
   display: none;
 }
 
+#encoderPlay {
+  position: relative;
+}
+
+.encoderTimerWrapper {
+  position: absolute;
+  width: 100%;
+  top: 20px;
+}
+
 #encoderPlayProgress .slider {
   width: 100%;
 }
@@ -83,4 +93,9 @@ body {
 .encoder-progress .columns {
   opacity: 0;
   pointer-events: none;
+}
+
+.decoderProgressBarWrapper {
+  max-height: 100vh;
+  overflow-y: scroll;
 }
