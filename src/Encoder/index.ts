@@ -29,6 +29,7 @@ const qrHints = new Map();
 const qrEncoder = new BrowserQRCodeSvgWriter();
 let totalChunks: null | number = null;
 let currentChunkIndex: number;
+let currentMetaData: EncodeMeta;
 
 let qrAnimationTimer: number;
 
@@ -59,12 +60,10 @@ const playPauseButton = document.getElementById(
 
 const playPause = {
   isPlaying: false,
-  buttonSubscribe(getMeta: () => EncodeMeta) {
-    playPauseButton.addEventListener("click", (event) => {
-      if (!(event.target instanceof HTMLInputElement)) return;
-
+  buttonSubscribe() {
+    playPauseButton.addEventListener("click", () => {
       if (this.isPlaying) this.pause();
-      else this.play(getMeta());
+      else this.play();
     });
   },
   pause() {
@@ -72,11 +71,16 @@ const playPause = {
     this.isPlaying = false;
     playPauseButton.setAttribute("value", "Play");
   },
-  play(meta: EncodeMeta) {
-    playQRAnimation(meta, currentChunkIndex);
+  play() {
+    playQRAnimation(currentMetaData, currentChunkIndex);
     this.isPlaying = true;
     playPauseButton.setAttribute("value", "Pause");
   },
+};
+
+playPause.buttonSubscribe();
+encoderFrameDelay.onchange = (event: Event) => {
+  encoderTimer.innerHTML = getEncoderTimer();
 };
 
 const getFrameDelayMs = () => {
@@ -293,9 +297,10 @@ const encode = async () => {
     extraBlocksCount,
   };
   totalChunks = chunks.length;
+  currentMetaData = meta;
 
   playQRAnimation(meta);
-  playPause.play(meta);
+  playPause.play();
 
   progressElementInput.onmousedown = (event: Event) => {
     if (!(event.target instanceof HTMLInputElement)) return;
@@ -308,9 +313,8 @@ const encode = async () => {
     const index = Number(event.target.value);
     currentChunkIndex = index;
     if (playPause.isPlaying) playQRAnimation(meta, index);
+    encoderTimer.innerHTML = getEncoderTimer();
   };
-
-  playPause.buttonSubscribe(() => meta);
 
   setGifProgress(undefined);
 };
