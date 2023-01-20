@@ -1,13 +1,13 @@
 # QR gif tool
 
 This tool can be used to encode / decode data in QR-gifs
-Just download [html file](index.html) and open it in your browser.
+Just download [html file](index_compact.html) and open it in your browser.
 
 Make sure that sha256 hash of the file is the following:
 ```
-SHA256 (index.html) = 
+SHA256 (index_compact.html) = 
 ```
-You might type `sha256sum index.html` on your terminal to check it
+You might type `sha256sum index_compact.html` on your terminal to check it
 
 ## Installation
 
