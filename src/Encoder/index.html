@@ -19,7 +19,12 @@
               ></range-picker>
             </div>
             <div class="column encodeColumnStart">
-              <input class="button is-primary" value="Encode data" type="button" id="encodeStart" />
+              <input
+                class="button is-primary"
+                value="Encode data"
+                type="button"
+                id="encodeStart"
+              />
             </div>
             <progress
               class="progress"
@@ -59,7 +64,20 @@
         ></range-picker>
       </div>
     </div>
+    <div class="columns columns-config">
+      <div class="column is-narrow">
+        <input
+          class="button is-primary"
+          value="Play"
+          type="button"
+          id="playPause"
+        />
+      </div>
+    </div>
     <div id="encoderPlay">
+      <div class="columns is-centered encoderTimerWrapper">
+        <div id="encoderTimer">00:00</div>
+      </div>
       <range-picker
         id="encoderPlayProgress"
         min="0"
