@@ -1,6 +1,12 @@
 # QR gif tool
 
 This tool can be used to encode / decode data in QR-gifs
+Just download [html file](index.html) and open it in your browser.
+
+Make sure that md5 hash of the file is the following:
+```
+MD5 (index.html) = 
+```
 
 ## Installation
 
