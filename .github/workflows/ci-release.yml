@@ -44,7 +44,7 @@ jobs:
       - run: |
           mv build/index_compact.html index.html
       - run: |
-          sed -i "s/MD5 (index.html) = .*$/MD5 (index.html) = $(md5sum build/index.html | cut -d ' ' -f 1)/" README.md
+          sed -i "s/SHA256 (index.html) = .*$/SHA256 (index.html) = $(sha256sum build/index.html | cut -d ' ' -f 1)/" README.md
 
       - name: Create Pull Request
         uses: lidofinance/create-pull-request@v4
