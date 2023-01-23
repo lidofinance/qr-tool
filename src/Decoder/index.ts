@@ -32,9 +32,6 @@ const decoderDownloadButton = document.getElementById(
   "decoderResultDownload"
 ) as HTMLButtonElement;
 const decoderPreviewEl = document.getElementById("preview") as HTMLVideoElement;
-const decoderMissingFramesEl = document.getElementById(
-  "decoderMissingFrames"
-) as HTMLInputElement;
 const decoderFilePanelEl = document.getElementById(
   "decoderFilePanel"
 ) as HTMLElement;
@@ -125,7 +122,6 @@ const setFrames = (data: FramesType) => {
       .join(",")
   );
   decoderProgressBarEl.setAttribute("total", String(framesOpts.totalFrames));
-  updateMissingFrames();
 };
 
 const setParsedFrames = (data: FramesType) => {
@@ -181,16 +177,6 @@ const getMissingFrames = () => {
     .filter((v) => v > 0);
 
   return frameIdxs.join(",");
-};
-
-const updateMissingFrames = () => {
-  const missingFrames = getMissingFrames();
-  if (!missingFrames) {
-    decoderMissingFramesEl.style.display = "none";
-    return;
-  }
-  decoderMissingFramesEl.style.display = "initial";
-  decoderMissingFramesEl.value = missingFrames;
 };
 
 const tryProcessBlock = (
@@ -321,7 +307,6 @@ const resetVars = () => {
 const hideDecoderStuff = () => {
   decoderProgressBarEl.dispatchEvent(new CustomEvent("reset"));
   decoderPreviewEl.style.display = "none";
-  decoderMissingFramesEl.style.display = "none";
 };
 
 window.addEventListener("pageTransition", (ev) => {
