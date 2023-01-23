@@ -33,9 +33,6 @@ body {
 #decoderResult {
   display: none;
 }
-#decoderMissingFrames {
-  display: none;
-}
 #preview {
   transform: scaleX(-1);
 }
@@ -96,6 +93,6 @@ body {
 }
 
 .decoderProgressBarWrapper {
-  max-height: 100vh;
+  max-height: calc(100vh - 41px);
   overflow-y: scroll;
 }
