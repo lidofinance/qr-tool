@@ -1,10 +1,12 @@
 import { BrowserQRCodeReader, IScannerControls } from "@zxing/browser";
-import { decompress } from "mini-lz4";
+import { decompress } from "lz4js";
 import { CHUNK_SIZE, COMPRESS_PAYLOAD } from "../config/coding";
 import ReedSolomon from "../libs/reed-solomon";
 import { FileType, generateDownload, uint8ArrayToString } from "../libs/utils";
 import "./components/progressBar";
 import "./components/filePanel";
+
+const USER_SCROLL_DELAY = 2;
 
 type FramesType = Record<number, Buffer>;
 let ac: IScannerControls;
@@ -36,6 +38,80 @@ const decoderMissingFramesEl = document.getElementById(
 const decoderFilePanelEl = document.getElementById(
   "decoderFilePanel"
 ) as HTMLElement;
+const autoScrollCheckBoxEl = document.getElementById(
+  "autoScroll"
+) as HTMLInputElement;
+const percentProgressEl = document.getElementById(
+  "percentProgress"
+) as HTMLSpanElement;
+
+const autoScroll: {
+  isUserMouseWheel: boolean;
+  currentScrollElement?: number;
+  setWheelListener: () => void;
+  scrollToElement: () => void;
+  isScrolling: boolean;
+  isUserMouseWheelTimeout: NodeJS.Timer | null;
+  isScrollingTimeout: NodeJS.Timer | null;
+} = {
+  isUserMouseWheel: false,
+  currentScrollElement: undefined,
+  isScrolling: false,
+  isUserMouseWheelTimeout: null,
+  isScrollingTimeout: null,
+
+  setWheelListener() {
+    document.onwheel = () => {
+      if (this.isUserMouseWheel) return;
+      if (this.isUserMouseWheelTimeout)
+        clearTimeout(this.isUserMouseWheelTimeout);
+
+      this.isUserMouseWheel = true;
+      this.isUserMouseWheelTimeout = setTimeout(() => {
+        this.isUserMouseWheel = false;
+        this.currentScrollElement = undefined;
+      }, USER_SCROLL_DELAY * 1000);
+    };
+  },
+  scrollToElement() {
+    const isNeedScroll = autoScrollCheckBoxEl.checked;
+    const isSameEl = this.currentScrollElement === currentFrameIdx;
+
+    if (
+      !this.isUserMouseWheel &&
+      !isSameEl &&
+      !this.isScrolling &&
+      isNeedScroll
+    ) {
+      if (this.isScrollingTimeout) clearTimeout(this.isScrollingTimeout);
+      this.isScrolling = true;
+      this.currentScrollElement = currentFrameIdx;
+      const currentElement = decoderProgressBarEl.shadowRoot?.getElementById(
+        String(currentFrameIdx)
+      );
+
+      currentElement?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest",
+      });
+      this.isScrollingTimeout = setTimeout(
+        () => (this.isScrolling = false),
+        1000
+      );
+    }
+  },
+};
+
+autoScroll.setWheelListener();
+
+const calcPercentProgress = () => {
+  const { totalFrames = 0 } = framesOpts || {};
+  const readedFrames = Object.keys(frames).length;
+  const percent = (readedFrames / totalFrames) * 100;
+
+  percentProgressEl.innerText = `${percent.toFixed(2)}%`;
+};
 
 const setFrames = (data: FramesType) => {
   frames = data;
@@ -196,6 +272,7 @@ const updateCurrentBuffer = (currentBuffer: Buffer) => {
   if (!currentBuffer) return;
   currentFrameIdx = currentBuffer.readUInt16LE(4);
   decoderProgressBarEl.setAttribute("current", String(currentFrameIdx));
+
   if (!frames[currentFrameIdx]) {
     const opts = framesOpts || {
       totalPlainFrames: currentBuffer.readUInt16LE(2),
@@ -208,6 +285,9 @@ const updateCurrentBuffer = (currentBuffer: Buffer) => {
     }
     tryProcessBlock(currentFrameIdx, currentBuffer.slice(8), opts);
   }
+
+  autoScroll.scrollToElement();
+  calcPercentProgress();
 };
 
 const initScan = async () => {

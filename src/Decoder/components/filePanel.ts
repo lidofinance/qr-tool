@@ -2,6 +2,11 @@ const HIGHLIGHT_CLASS = "panel-block has-background-light";
 const PLAIN_CLASS = "panel-block";
 class FilePanel extends HTMLElement {
   template = `
+  <style>
+  .panel-block {
+    word-break: break-word;
+  }    
+  </style>
   <nav class="panel">
   
   </nav>

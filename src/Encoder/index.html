@@ -7,60 +7,85 @@
           id="encoderData"
           placeholder="Put your payload here or just drop your file here"
         ></textarea>
-        <div class="mt-4">
-          <a id="encoderAdvancedSettingsLink">Advanced options</a>
-        </div>
-        <div class="mt-2 notification" id="encoderAdvancedSettings">
-          <button class="delete"></button>
-          <range-picker
-            id="encoderImageSize"
-            min="100"
-            max="500"
-            value="500"
-            title="Max image size"
-          ></range-picker>
-          <range-picker
-            id="encoderErrorCorrection"
-            min="10"
-            max="100"
-            value="30"
-            title="Error correction volume"
-          ></range-picker>
-
-          <range-picker
-            id="encoderFrameDelay"
-            min="1"
-            max="20"
-            value="2"
-            divider="10"
-            title="Frame delay"
-          ></range-picker>
-
-          <div class="field">
-            <label class="label"> Include only the following frames </label>
-            <div class="control">
-              <input type="text" class="input" id="encoderIncludeOnlyFrames" />
+        <div class="mt-2 notification" id="encoderStartSettings">
+          <div class="columns">
+            <div class="column">
+              <range-picker
+                id="encoderErrorCorrection"
+                min="10"
+                max="100"
+                value="30"
+                title="Error correction volume"
+              ></range-picker>
             </div>
+            <div class="column encodeColumnStart">
+              <input
+                class="button is-primary"
+                value="Encode data"
+                type="button"
+                id="encodeStart"
+              />
+            </div>
+            <progress
+              class="progress"
+              value="0"
+              max="100"
+              id="encoderProgress"
+            ></progress>
           </div>
         </div>
 
-        <div class="mt-4">
-          <input class="button is-primary" value="Encode" id="encodeStart" />
-        </div>
         <div class="column">
-          <progress
-            class="progress"
-            value="0"
-            max="100"
-            id="encoderProgress"
-            style="display: none"
-          ></progress>
           <div id="encoderLogs"></div>
         </div>
       </div>
       <div class="column result">
-        <result-image id="encoderResult"></result-image>
+        <div id="encoderFrame"></div>
       </div>
+    </div>
+    <div class="columns columns-config">
+      <div class="column is-narrow">
+        <range-picker
+          id="encoderFrameDelay"
+          min="0.05"
+          max="2"
+          value="0.2"
+          step="0.05"
+          title="Frame delay"
+        ></range-picker>
+      </div>
+      <div class="column is-narrow">
+        <range-picker
+          id="encoderImageSize"
+          min="100"
+          max="500"
+          value="500"
+          title="Max image size"
+        ></range-picker>
+      </div>
+    </div>
+    <div class="columns columns-config">
+      <div class="column is-narrow">
+        <input
+          class="button is-primary"
+          value="Play"
+          type="button"
+          id="playPause"
+        />
+      </div>
+    </div>
+    <div id="encoderPlay">
+      <div class="columns is-centered encoderTimerWrapper">
+        <div id="encoderTimer">00:00</div>
+      </div>
+      <range-picker
+        id="encoderPlayProgress"
+        min="0"
+        max="0"
+        value="0"
+        title="Play progress"
+      ></range-picker>
+      <range-ruler id="encoderPlayRuler" min="0" max="0"></range-ruler>
     </div>
   </div>
 </div>

@@ -2,30 +2,28 @@ class RangePicker extends HTMLElement {
   template = ({
     max,
     min,
+    step,
     value,
     title,
-    divider,
   }: {
     max: string;
     min: string;
+    step: string;
     value: string;
     title: string;
-    divider: number;
   }) => `
   <div class="field">
     <label class="label">${title}</label>
     <div class="control">
         <input
         type="range"
+        step="${step}"
         min="${min}"
         max="${max}"
         value="${value}"
         class="slider"
         />
-        <span>(<span class="value">${this.formatValue(
-          divider,
-          value
-        )}</span>)</span>
+        <span>(<span class="value">${value}</span>)</span>
     </div>
     </div>
   `;
@@ -33,25 +31,20 @@ class RangePicker extends HTMLElement {
     super();
   }
 
-  formatValue(divider: number, value: string) {
-    return divider !== 1 ? (Number(value) / divider).toFixed(1) : value;
-  }
-
   connectedCallback() {
-    const divider = Number(this.getAttribute("divider") || "1");
     this.innerHTML = this.template({
+      step: this.getAttribute("step") || "",
       max: this.getAttribute("max") || "",
       min: this.getAttribute("min") || "",
       value: this.getAttribute("value") || "",
       title: this.getAttribute("title") || "",
-      divider,
     });
     const slider = this.querySelector(".slider") as HTMLInputElement;
     const display = this.querySelector(".value") as HTMLSpanElement;
     const self = this;
     slider.addEventListener("change", function () {
       const value = (this as HTMLInputElement).value;
-      display.innerHTML = self.formatValue(divider, value);
+      display.innerText = value;
       self.setAttribute("value", value);
       self.dispatchEvent(new CustomEvent("change"));
     });
@@ -68,7 +61,30 @@ class RangePicker extends HTMLElement {
   ) {
     if (newValue !== oldValue) {
       this.setAttribute(attrName, newValue);
+      this.render();
     }
+  }
+
+  render() {
+    const { shadowRoot } = this;
+    const value = this.getAttribute("value") ?? "";
+    const step = this.getAttribute("step") ?? "";
+    const min = this.getAttribute("min") ?? "";
+    const max = this.getAttribute("max") ?? "";
+    const title = this.getAttribute("title") ?? "";
+
+    const display = this.querySelector(".value") as HTMLSpanElement;
+    const slider = this.querySelector(".slider") as HTMLInputElement;
+    const label = this.querySelector(".label") as HTMLInputElement;
+
+    slider.setAttribute("step", step);
+    slider.setAttribute("min", min);
+    slider.setAttribute("max", max);
+    slider.setAttribute("value", value);
+    slider.value = value;
+
+    label.innerText = title;
+    display.innerText = value;
   }
 }
 

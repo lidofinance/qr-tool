@@ -1,23 +1,54 @@
-name: Release
-permissions:
-  contents: write
+name: Create PR with release artifacts
+
 on:
   push:
-    tags:
-      - "*"
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
-  build:
+  release:
+    name: Create PR with artifacts
+    if: "!contains(github.event.head_commit.message, 'chore(release)')"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Bump version
+        id: changelog
+        uses: lidofinance/conventional-changelog-action@v3
+        with:
+          git-message: "chore(release): {version}"
+          tag-prefix: ""
+          output-file: ""
+          version-file: package.json
+          version-path: version
+          git-push: false
+          skip-on-empty: false
+          skip-ci: false
+          create-summary: true
+
       - name: Install dependencies
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 16.x
       - run: yarn --frozen-lockfile
-      - run: yarn build
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - run: yarn compact
+      - run: |
+          mv build/index.html index.html
+      - run: |
+          sed -i "s/SHA256 (index.html) = .*$/SHA256 (index.html) = $(sha256sum build/index.html | cut -d ' ' -f 1)/" README.md
+
+      - name: Create Pull Request
+        uses: lidofinance/create-pull-request@v4
+        if: ${{ steps.changelog.outputs.version }}
         with:
-          files: build/index.html
+          branch: release-${{ steps.changelog.outputs.version }}
+          title: "chore(release): ${{ steps.changelog.outputs.version }}"
+          body: "This PR is generated automatically.\nIf you don't need this PR than close it and **delete source branch**! "

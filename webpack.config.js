@@ -7,6 +7,9 @@ const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HTMLInlineCSSWebpackPlugin =
   require("html-inline-css-webpack-plugin").default;
+const HtmlInlineScriptPlugin = require("html-inline-script-webpack-plugin");
+
+const isInline = process.env.INLINE;
 
 module.exports = {
   mode: process.env.NODE_ENV || "development",
@@ -40,6 +43,7 @@ module.exports = {
     new MiniCssExtractPlugin(),
     new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/./]),
     new HTMLInlineCSSWebpackPlugin(),
+    ...(isInline ? [new HtmlInlineScriptPlugin()] : []),
   ],
   module: {
     rules: [

@@ -3,7 +3,17 @@
     <div class="columns">
       <div class="column is-one-quarter">
         <decoder-file-panel id="decoderFilePanel"></decoder-file-panel>
+        <div class="column is-narrow">
+          <label class="checkbox">
+            <input type="checkbox" checked="true" id="autoScroll" />
+            Auto scroll
+          </label>
+        </div>
+        <div class="column is-narrow">
+          <div>Progress: <span id="percentProgress">0%</span></div>
+        </div>
       </div>
+
       <div class="column">
         <input
           type="text"
@@ -25,7 +35,7 @@
           </button>
         </div>
       </div>
-      <div class="column is-one-quarter">
+      <div class="column is-one-quarter decoderProgressBarWrapper">
         <decoder-progress-bar id="decoderProgressBar"></decoder-progress-bar>
       </div>
     </div>
