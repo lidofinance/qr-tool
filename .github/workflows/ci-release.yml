@@ -49,6 +49,8 @@ jobs:
         uses: lidofinance/create-pull-request@v4
         if: ${{ steps.changelog.outputs.version }}
         with:
+          commit-message: Build index.html
+          author: "Release Workflow <noreply@github.com>"
           branch: release-${{ steps.changelog.outputs.version }}
           title: "chore(release): ${{ steps.changelog.outputs.version }}"
           body: "This PR is generated automatically.\nIf you don't need this PR than close it and **delete source branch**! "
