@@ -39,12 +39,11 @@ jobs:
         with:
           node-version: 16.x
       - run: yarn --frozen-lockfile
-      - run: yarn build
       - run: yarn compact
       - run: |
-          mv build/index_compact.html index_compact.html
+          mv build/index.html index.html
       - run: |
-          sed -i "s/SHA256 (index_compact.html) = .*$/SHA256 (index_compact.html) = $(sha256sum build/index_compact.html | cut -d ' ' -f 1)/" README.md
+          sed -i "s/SHA256 (index.html) = .*$/SHA256 (index.html) = $(sha256sum build/index.html | cut -d ' ' -f 1)/" README.md
 
       - name: Create Pull Request
         uses: lidofinance/create-pull-request@v4
