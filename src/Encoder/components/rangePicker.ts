@@ -44,7 +44,7 @@ class RangePicker extends HTMLElement {
     const self = this;
     slider.addEventListener("change", function () {
       const value = (this as HTMLInputElement).value;
-      display.innerHTML = value;
+      display.innerText = value;
       self.setAttribute("value", value);
       self.dispatchEvent(new CustomEvent("change"));
     });
@@ -83,8 +83,8 @@ class RangePicker extends HTMLElement {
     slider.setAttribute("value", value);
     slider.value = value;
 
-    label.innerHTML = title;
-    display.innerHTML = value;
+    label.innerText = title;
+    display.innerText = value;
   }
 }
 

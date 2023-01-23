@@ -110,7 +110,7 @@ const calcPercentProgress = () => {
   const readedFrames = Object.keys(frames).length;
   const percent = (readedFrames / totalFrames) * 100;
 
-  percentProgressEl.innerHTML = `${percent.toFixed(2)}%`;
+  percentProgressEl.innerText = `${percent.toFixed(2)}%`;
 };
 
 const setFrames = (data: FramesType) => {
