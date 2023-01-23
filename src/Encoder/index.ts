@@ -80,7 +80,7 @@ const playPause = {
 
 playPause.buttonSubscribe();
 encoderFrameDelay.onchange = (event: Event) => {
-  encoderTimer.innerHTML = getEncoderTimer();
+  encoderTimer.innerText = getEncoderTimer();
 };
 
 const getFrameDelayMs = () => {
@@ -164,7 +164,7 @@ const drawFrame = (
   progressRuler.setAttribute("min", String(0));
   progressRuler.setAttribute("max", String(total - 1));
 
-  encoderTimer.innerHTML = getEncoderTimer();
+  encoderTimer.innerText = getEncoderTimer();
 };
 
 const compressPayload = (payload: string): Uint8Array => {
@@ -313,7 +313,7 @@ const encode = async () => {
     const index = Number(event.target.value);
     currentChunkIndex = index;
     if (playPause.isPlaying) playQRAnimation(meta, index);
-    encoderTimer.innerHTML = getEncoderTimer();
+    encoderTimer.innerText = getEncoderTimer();
   };
 
   setGifProgress(undefined);
