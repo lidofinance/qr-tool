@@ -104,7 +104,7 @@ const getEncoderTimer = () => {
   const minutes = Math.floor(leftMs / 60000);
   const seconds = ((leftMs % 60000) / 1000).toFixed(0);
 
-  return minutes + ":" + (Number(seconds) < 10 ? "0" : "") + seconds;
+  return `~ ${minutes}:${(Number(seconds) < 10 ? "0" : "")}${seconds}`;
 };
 
 const playQRAnimation = (encodedResult: EncodeMeta, index = 0) => {
