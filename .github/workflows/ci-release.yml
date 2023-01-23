@@ -43,7 +43,7 @@ jobs:
       - run: |
           mv build/index.html index.html
       - run: |
-          sed -i "s/SHA256 (index.html) = .*$/SHA256 (index.html) = $(sha256sum build/index.html | cut -d ' ' -f 1)/" README.md
+          sed -i "s/SHA256 (index.html) = .*$/SHA256 (index.html) = $(sha256sum index.html | cut -d ' ' -f 1)/" README.md
 
       - name: Create Pull Request
         uses: lidofinance/create-pull-request@v4
