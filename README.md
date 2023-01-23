@@ -5,7 +5,7 @@ Just download [html file](index.html) and open it in your browser.
 
 Make sure that sha256 hash of the file is the following:
 ```
-SHA256 (index.html) = 
+SHA256 (index.html) = a344a7e926a1a8bda27763016156fec685b968c94235e9efe148e29308e8dc26
 ```
 You might type `sha256sum index.html` on your terminal to check it
 
