@@ -1525,7 +1525,7 @@ html-inline-css-webpack-plugin@1.11.1:
     lodash "^4.17.15"
     tslib "^1.9.3"
 
-html-inline-script-webpack-plugin@^3.1.0:
+html-inline-script-webpack-plugin@3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/html-inline-script-webpack-plugin/-/html-inline-script-webpack-plugin-3.1.0.tgz#fabffb9b2a6bd8e57785904948283155ee27a7b9"
   integrity sha512-Kscqm4fNWxvQXt+R0o1UV9/ug0iZTEdYKXtrDuyauwI9FUe1azR8QXB3ZHkGupXzLF3lsvWheFb9WZT/a8aKtw==
