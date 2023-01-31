@@ -72,6 +72,8 @@ const playPause = {
     playPauseButton.setAttribute("value", "Play");
   },
   play() {
+    if (!currentMetaData) return;
+    
     playQRAnimation(currentMetaData, currentChunkIndex);
     this.isPlaying = true;
     playPauseButton.setAttribute("value", "Pause");
