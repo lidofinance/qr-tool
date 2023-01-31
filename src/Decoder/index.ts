@@ -269,11 +269,10 @@ const updateCurrentBuffer = (currentBuffer: Buffer) => {
     if (!framesOpts) {
       framesOpts = opts;
     }
+    calcPercentProgress();
+    autoScroll.scrollToElement();
     tryProcessBlock(currentFrameIdx, currentBuffer.slice(8), opts);
   }
-
-  autoScroll.scrollToElement();
-  calcPercentProgress();
 };
 
 const initScan = async () => {
@@ -328,17 +327,19 @@ window.addEventListener("decoderSelectFile", (ev) => {
   decoderResultEl.setAttribute("filename", filename);
   decoderResultEl.style.display = "initial";
   decoderDownloadButton.style.display = "initial";
+  percentProgressEl.innerText = '100%';
 });
 
 window.addEventListener("decoderNewScan", () => {
   resetVars();
   decoderResultEl.style.display = "none";
   decoderDownloadButton.style.display = "none";
+  percentProgressEl.innerText = '0%';
   initScan();
 });
 
 decoderDownloadButton.onclick = () => {
   const filename = decoderResultEl.getAttribute("filename") as string;
-  const content = decoderResultEl.value;
+  const content = decoderResultEl.value.replaceAll('\x00','');
   generateDownload(filename, content, FileType.TEXT);
 };
