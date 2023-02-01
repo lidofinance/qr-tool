@@ -58,6 +58,8 @@ const playPauseButton = document.getElementById(
   "playPause"
 ) as HTMLButtonElement;
 
+const globalArr: string[] = []
+
 const playPause = {
   isPlaying: false,
   buttonSubscribe() {
@@ -118,12 +120,18 @@ const playQRAnimation = (encodedResult: EncodeMeta, index = 0) => {
 
   currentChunkIndex = index;
   drawFrame(chunk, meta);
+  
 
   // next frame
   qrAnimationTimer = setTimeout(() => {
     const nextIndex = index + 1 < chunks.length ? index + 1 : 0;
+    if (nextIndex === 0) {
+      console.log('first', globalArr)
+
+      return;
+    }
     playQRAnimation(encodedResult, nextIndex);
-  }, frameDelay) as any;
+  }, 0) as any;
 };
 
 const drawFrame = (
@@ -152,6 +160,8 @@ const drawFrame = (
     Buffer.from(new Uint8Array([blocksCount, extraBlocksCount]).buffer),
     chunk,
   ]);
+
+  globalArr.push(text.toString("base64"))
 
   const contents = text.toString("base64");
   const svg = qrEncoder.write(contents, imageSize, imageSize, qrHints);

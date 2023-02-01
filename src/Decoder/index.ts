@@ -5,6 +5,9 @@ import ReedSolomon from "../libs/reed-solomon";
 import { FileType, generateDownload, uint8ArrayToString } from "../libs/utils";
 import "./components/progressBar";
 import "./components/filePanel";
+import {mockString} from './mock'
+
+const mockResult: string[] = []
 
 const USER_SCROLL_DELAY = 2;
 
@@ -140,10 +143,15 @@ const setParsedFrames = (data: FramesType) => {
       ? uint8ArrayToString(decompress(buffer))
       : buffer.toString()
   );
+  // console.log('buffer', buffer)
+  // console.log('buffer toString', buffer.toString("base64"))
+  // console.log('result', result)
+  console.log('parsedFrames', parsedFrames)
+  console.log('mockResult', mockResult)
   const fileNameSize = result.readUInt8(0);
   const filename = result.slice(1, fileNameSize + 1).toString();
   setResult({ filename, data: result.slice(fileNameSize + 1).toString() });
-  ac.stop();
+  // ac.stop();
 };
 
 const setResult = ({ data, filename }: { data: string; filename: string }) => {
@@ -155,28 +163,6 @@ const setResult = ({ data, filename }: { data: string; filename: string }) => {
       },
     })
   );
-};
-
-const getMissingFrames = () => {
-  if (!framesOpts) return;
-  const { blocksCount, extraBlocksCount, totalFrames, totalPlainFrames } =
-    framesOpts;
-  if (!blocksCount || !extraBlocksCount) return;
-  const skipRSopt = totalPlainFrames < blocksCount;
-  const frameIdxs = new Array(totalFrames)
-    .fill("")
-    .map((_, index) => !!frames[index])
-    .map((frame, index) => {
-      if (frame) return true;
-      if (skipRSopt) return false;
-      const blockIdx = Math.floor(index / (blocksCount + extraBlocksCount));
-      if (parsedFrames[blockIdx * blocksCount]) return true;
-      return false;
-    })
-    .map((item, index) => (item ? -1 : index))
-    .filter((v) => v > 0);
-
-  return frameIdxs.join(",");
 };
 
 const tryProcessBlock = (
@@ -203,6 +189,9 @@ const tryProcessBlock = (
     ...frames,
     [frameId]: frame,
   });
+
+  mockResult.push(frame.toString("base64"))
+  // if (frameId === 2173) console.log('first', frame)
 
   if (totalPlainFrames < blocksCount) {
     setParsedFrames({
@@ -239,6 +228,7 @@ const tryProcessBlock = (
     let decodedStr: number[];
     try {
       decodedStr = rs.decode(s);
+      // console.log('decodedStr', decodedStr, s)
     } catch (_) {
       return;
     }
@@ -249,6 +239,10 @@ const tryProcessBlock = (
   }
   const newParsedFrames = { ...parsedFrames };
   for (let i = 0; i < out.length; i++) {
+    // if ((blockIdx * blocksCount + i) === 2173)  {
+    //   console.log('out[i]', out.length, out[i])
+    // }
+
     newParsedFrames[blockIdx * blocksCount + i] = Buffer.from(out[i]);
   }
   setParsedFrames(newParsedFrames);
@@ -276,6 +270,15 @@ const updateCurrentBuffer = (currentBuffer: Buffer) => {
   autoScroll.scrollToElement();
 };
 
+const mockArray = mockString.split(',')
+
+const initScanMock = () => {
+  mockArray.forEach((item) => {
+    const buffer = Buffer.from(item || "", "base64");
+    updateCurrentBuffer(buffer);
+  })
+}
+
 const initScan = async () => {
   decoderPreviewEl.style.display = "initial";
   const scanner = new BrowserQRCodeReader(new Map().set("TRY_HARDER", true), {
@@ -288,7 +291,9 @@ const initScan = async () => {
       "preview",
       (res, err) => {
         if (err) return;
+        // console.log('res', res, res?.getText())
         const buffer = Buffer.from(res?.getText() || "", "base64");
+        // console.log('buffer', buffer)
         updateCurrentBuffer(buffer);
       }
     );
@@ -313,7 +318,7 @@ window.addEventListener("pageTransition", (ev) => {
   const { detail } = ev as CustomEvent;
   if (detail.page !== "decoder") return;
   if (detail.action === "unload" && ac) {
-    ac.stop();
+    // ac.stop();
   }
   if (detail.action === "load") {
     initScan();
@@ -336,8 +341,9 @@ window.addEventListener("decoderNewScan", () => {
   decoderResultEl.style.display = "none";
   decoderDownloadButton.style.display = "none";
   percentProgressEl.innerText = '0%';
-  initScan();
+  // initScan();
 });
+// initScanMock()
 
 decoderDownloadButton.onclick = () => {
   const filename = decoderResultEl.getAttribute("filename") as string;
