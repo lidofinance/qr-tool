@@ -341,6 +341,6 @@ window.addEventListener("decoderNewScan", () => {
 
 decoderDownloadButton.onclick = () => {
   const filename = decoderResultEl.getAttribute("filename") as string;
-  const content = decoderResultEl.value.replace(/(?:\x00+)$/gm,'');
+  const content = decoderResultEl.value;
   generateDownload(filename, content, FileType.TEXT);
 };
