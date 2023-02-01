@@ -5,7 +5,7 @@ Just download [html file](index.html) and open it in your browser.
 
 Make sure that sha1 hash of the file is the following:
 ```
-SHA1 (index.html) = c9447eade227dbd6419365262b248e0221c25095
+SHA1 (index.html) = 410618d60e46ab347ce49566069748cc5046d6e2
 ```
 You might type `sha1sum index.html` on your terminal to check it
 
