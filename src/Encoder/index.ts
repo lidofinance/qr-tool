@@ -72,6 +72,8 @@ const playPause = {
     playPauseButton.setAttribute("value", "Play");
   },
   play() {
+    if (!currentMetaData) return;
+    
     playQRAnimation(currentMetaData, currentChunkIndex);
     this.isPlaying = true;
     playPauseButton.setAttribute("value", "Pause");
@@ -168,7 +170,7 @@ const drawFrame = (
 };
 
 const compressPayload = (payload: string): Uint8Array => {
-  return COMPRESS_PAYLOAD ? compress(payload) : Buffer.from(payload);
+  return COMPRESS_PAYLOAD ? compress(Buffer.from(payload)) : Buffer.from(payload);
 };
 
 const solmonReedChunks = (

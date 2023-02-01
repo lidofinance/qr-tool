@@ -270,9 +270,10 @@ const updateCurrentBuffer = (currentBuffer: Buffer) => {
       framesOpts = opts;
     }
     calcPercentProgress();
-    autoScroll.scrollToElement();
     tryProcessBlock(currentFrameIdx, currentBuffer.slice(8), opts);
   }
+
+  autoScroll.scrollToElement();
 };
 
 const initScan = async () => {
@@ -340,6 +341,6 @@ window.addEventListener("decoderNewScan", () => {
 
 decoderDownloadButton.onclick = () => {
   const filename = decoderResultEl.getAttribute("filename") as string;
-  const content = decoderResultEl.value.replaceAll('\x00','');
+  const content = decoderResultEl.value;
   generateDownload(filename, content, FileType.TEXT);
 };
