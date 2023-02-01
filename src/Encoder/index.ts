@@ -58,7 +58,9 @@ const playPauseButton = document.getElementById(
   "playPause"
 ) as HTMLButtonElement;
 
-const globalArr: string[] = []
+const globalArr: string[] = [];
+
+(window as any)["globalArr"] = globalArr;
 
 const playPause = {
   isPlaying: false,
@@ -75,7 +77,7 @@ const playPause = {
   },
   play() {
     if (!currentMetaData) return;
-    
+
     playQRAnimation(currentMetaData, currentChunkIndex);
     this.isPlaying = true;
     playPauseButton.setAttribute("value", "Pause");
@@ -108,7 +110,7 @@ const getEncoderTimer = () => {
   const minutes = Math.floor(leftMs / 60000);
   const seconds = ((leftMs % 60000) / 1000).toFixed(0);
 
-  return `~ ${minutes}:${(Number(seconds) < 10 ? "0" : "")}${seconds}`;
+  return `~ ${minutes}:${Number(seconds) < 10 ? "0" : ""}${seconds}`;
 };
 
 const playQRAnimation = (encodedResult: EncodeMeta, index = 0) => {
@@ -120,14 +122,12 @@ const playQRAnimation = (encodedResult: EncodeMeta, index = 0) => {
 
   currentChunkIndex = index;
   drawFrame(chunk, meta);
-  
 
   // next frame
   qrAnimationTimer = setTimeout(() => {
     const nextIndex = index + 1 < chunks.length ? index + 1 : 0;
     if (nextIndex === 0) {
-      console.log('first', globalArr)
-
+      console.log("first", globalArr);
       return;
     }
     playQRAnimation(encodedResult, nextIndex);
@@ -161,7 +161,7 @@ const drawFrame = (
     chunk,
   ]);
 
-  globalArr.push(text.toString("base64"))
+  globalArr.push(text.toString("base64"));
 
   const contents = text.toString("base64");
   const svg = qrEncoder.write(contents, imageSize, imageSize, qrHints);
@@ -180,10 +180,12 @@ const drawFrame = (
 };
 
 const compressPayload = (payload: string): Uint8Array => {
-  return COMPRESS_PAYLOAD ? compress(Buffer.from(payload)) : Buffer.from(payload);
+  return COMPRESS_PAYLOAD
+    ? compress(Buffer.from(payload))
+    : Buffer.from(payload);
 };
 
-const solmonReedChunks = (
+const solomonReedChunks = (
   chunks: Uint8Array[],
   {
     blocksCount,
@@ -278,10 +280,15 @@ const encode = async () => {
     ((BLOCKS_COUNT * Number(encoderErrorCorrection)) / 100) | 0;
   await addLog(`Filename: ${filename || ""}`);
   await addLog(`extraBlocksCount ${extraBlocksCount}`);
+  const stringData = encoderData.toString();
+  // pack into header filename and file length with their data length(uint8)
   const fileNameHeader = Buffer.concat([
     Buffer.from([filename ? filename.length : 0]),
     Buffer.from(filename || ""),
+    Buffer.from([stringData.length.toString().length]),
+    Buffer.from(stringData.length.toString()),
   ]);
+
   const payload = fileNameHeader.toString() + encoderData.toString();
   const compressedPayload = compressPayload(payload);
   await addLog(`Compressed length: ${compressedPayload.length}`);
@@ -289,9 +296,10 @@ const encode = async () => {
   const parts = stringToChunks(compressedPayload, CHUNK_SIZE);
   await addLog(`Chunks before: ${parts.length}`);
   setGifProgress(50);
-  const chunks = solmonReedChunks(parts, { blocksCount, extraBlocksCount }).map(
-    (chunk, index) => ({ chunk, index })
-  );
+  const chunks = solomonReedChunks(parts, {
+    blocksCount,
+    extraBlocksCount,
+  }).map((chunk, index) => ({ chunk, index }));
   await addLog(`Chunks count: ${chunks.length}`);
   setGifProgress(100);
 

@@ -5,9 +5,9 @@ import ReedSolomon from "../libs/reed-solomon";
 import { FileType, generateDownload, uint8ArrayToString } from "../libs/utils";
 import "./components/progressBar";
 import "./components/filePanel";
-import {mockString} from './mock'
+import { mockArray } from "./mock";
 
-const mockResult: string[] = []
+const mockResult: string[] = [];
 
 const USER_SCROLL_DELAY = 2;
 
@@ -143,14 +143,26 @@ const setParsedFrames = (data: FramesType) => {
       ? uint8ArrayToString(decompress(buffer))
       : buffer.toString()
   );
-  // console.log('buffer', buffer)
-  // console.log('buffer toString', buffer.toString("base64"))
-  // console.log('result', result)
-  console.log('parsedFrames', parsedFrames)
-  console.log('mockResult', mockResult)
+
+  // HEADER decoding:
   const fileNameSize = result.readUInt8(0);
-  const filename = result.slice(1, fileNameSize + 1).toString();
-  setResult({ filename, data: result.slice(fileNameSize + 1).toString() });
+  const filename = result.subarray(1, fileNameSize + 1).toString();
+  // similar to filename - decode length of stringified file length and then file length itself
+  const dataLengthSize = result.readUInt8(fileNameSize + 1);
+  const dataLength = Number.parseInt(
+    result
+      .subarray(fileNameSize + 2, fileNameSize + dataLengthSize + 2)
+      .toString()
+  );
+  setResult({
+    filename,
+    data: result
+      .subarray(
+        fileNameSize + dataLengthSize + 2,
+        fileNameSize + dataLengthSize + 2 + dataLength
+      )
+      .toString(),
+  });
   // ac.stop();
 };
 
@@ -190,7 +202,7 @@ const tryProcessBlock = (
     [frameId]: frame,
   });
 
-  mockResult.push(frame.toString("base64"))
+  mockResult.push(frame.toString("base64"));
   // if (frameId === 2173) console.log('first', frame)
 
   if (totalPlainFrames < blocksCount) {
@@ -255,8 +267,8 @@ const updateCurrentBuffer = (currentBuffer: Buffer) => {
 
   if (!frames[currentFrameIdx]) {
     const opts = framesOpts || {
-      totalPlainFrames: currentBuffer.readUInt16LE(2),
       totalFrames: currentBuffer.readUInt16LE(0),
+      totalPlainFrames: currentBuffer.readUInt16LE(2),
       blocksCount: currentBuffer.readUInt8(6),
       extraBlocksCount: currentBuffer.readUInt8(7),
     };
@@ -264,20 +276,18 @@ const updateCurrentBuffer = (currentBuffer: Buffer) => {
       framesOpts = opts;
     }
     calcPercentProgress();
-    tryProcessBlock(currentFrameIdx, currentBuffer.slice(8), opts);
+    tryProcessBlock(currentFrameIdx, currentBuffer.subarray(8), opts);
   }
 
   autoScroll.scrollToElement();
 };
 
-const mockArray = mockString.split(',')
-
 const initScanMock = () => {
   mockArray.forEach((item) => {
     const buffer = Buffer.from(item || "", "base64");
     updateCurrentBuffer(buffer);
-  })
-}
+  });
+};
 
 const initScan = async () => {
   decoderPreviewEl.style.display = "initial";
@@ -333,17 +343,17 @@ window.addEventListener("decoderSelectFile", (ev) => {
   decoderResultEl.setAttribute("filename", filename);
   decoderResultEl.style.display = "initial";
   decoderDownloadButton.style.display = "initial";
-  percentProgressEl.innerText = '100%';
+  percentProgressEl.innerText = "100%";
 });
 
 window.addEventListener("decoderNewScan", () => {
   resetVars();
   decoderResultEl.style.display = "none";
   decoderDownloadButton.style.display = "none";
-  percentProgressEl.innerText = '0%';
+  percentProgressEl.innerText = "0%";
   // initScan();
 });
-// initScanMock()
+initScanMock();
 
 decoderDownloadButton.onclick = () => {
   const filename = decoderResultEl.getAttribute("filename") as string;
