@@ -268,9 +268,13 @@ const encode = async () => {
     ((BLOCKS_COUNT * Number(encoderErrorCorrection)) / 100) | 0;
   await addLog(`Filename: ${filename || ""}`);
   await addLog(`extraBlocksCount ${extraBlocksCount}`);
+  const stringData = encoderData.toString();
+  // pack into header filename and file length with their data length(uint8)
   const fileNameHeader = Buffer.concat([
     Buffer.from([filename ? filename.length : 0]),
     Buffer.from(filename || ""),
+    Buffer.from([stringData.length.toString().length]),
+    Buffer.from(stringData.length.toString()),
   ]);
   const payload = fileNameHeader.toString() + encoderData.toString();
   const compressedPayload = compressPayload(payload);

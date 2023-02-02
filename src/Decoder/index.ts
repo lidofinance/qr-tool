@@ -140,9 +140,25 @@ const setParsedFrames = (data: FramesType) => {
       ? uint8ArrayToString(decompress(buffer))
       : buffer.toString()
   );
+  // HEADER decoding:
   const fileNameSize = result.readUInt8(0);
-  const filename = result.slice(1, fileNameSize + 1).toString();
-  setResult({ filename, data: result.slice(fileNameSize + 1).toString() });
+  const filename = result.subarray(1, fileNameSize + 1).toString();
+  // similar to filename - decode length of stringified file length and then file length itself
+  const dataLengthSize = result.readUInt8(fileNameSize + 1);
+  const dataLength = Number.parseInt(
+    result
+      .subarray(fileNameSize + 2, fileNameSize + dataLengthSize + 2)
+      .toString()
+  );
+  setResult({
+    filename,
+    data: result
+      .subarray(
+        fileNameSize + dataLengthSize + 2,
+        fileNameSize + dataLengthSize + 2 + dataLength
+      )
+      .toString(),
+  });
   ac.stop();
 };
 
