@@ -285,8 +285,8 @@ const updateCurrentBuffer = (currentBuffer: Buffer) => {
     if (!framesOpts) {
       framesOpts = opts;
     }
-    calcPercentProgress();
     tryProcessBlock(currentFrameIdx, currentBuffer.slice(8), opts);
+    calcPercentProgress();
   }
 
   autoScroll.scrollToElement();
