@@ -41,7 +41,7 @@ module.exports = {
       "process.version": '"v12.20.1"',
     }),
     new MiniCssExtractPlugin(),
-    new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/./]),
+    new InlineChunkHtmlPlugin(HtmlWebpackPlugin, [/runtime/]),
     new HTMLInlineCSSWebpackPlugin(),
     ...(isInline ? [new HtmlInlineScriptPlugin()] : []),
   ],
