@@ -173,7 +173,7 @@ const compressPayload = (payload: string): Uint8Array => {
   return COMPRESS_PAYLOAD ? compress(Buffer.from(payload)) : Buffer.from(payload);
 };
 
-const solmonReedChunks = (
+const solomonReedChunks = (
   chunks: Uint8Array[],
   {
     blocksCount,
@@ -283,9 +283,10 @@ const encode = async () => {
   const parts = stringToChunks(compressedPayload, CHUNK_SIZE);
   await addLog(`Chunks before: ${parts.length}`);
   setGifProgress(50);
-  const chunks = solmonReedChunks(parts, { blocksCount, extraBlocksCount }).map(
-    (chunk, index) => ({ chunk, index })
-  );
+  const chunks = solomonReedChunks(parts, {
+    blocksCount,
+    extraBlocksCount,
+  }).map((chunk, index) => ({ chunk, index }));
   await addLog(`Chunks count: ${chunks.length}`);
   setGifProgress(100);
 

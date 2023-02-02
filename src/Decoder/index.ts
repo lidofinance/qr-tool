@@ -104,8 +104,8 @@ autoScroll.setWheelListener();
 
 const calcPercentProgress = () => {
   const { totalFrames = 0 } = framesOpts || {};
-  const readedFrames = Object.keys(frames).length;
-  const percent = (readedFrames / totalFrames) * 100;
+  const readFrames = Object.keys(frames).length;
+  const percent = (readFrames / totalFrames) * 100;
 
   percentProgressEl.innerText = `${percent.toFixed(2)}%`;
 };
