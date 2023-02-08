@@ -173,7 +173,7 @@ const compressPayload = (payload: string): Uint8Array => {
   return COMPRESS_PAYLOAD ? compress(Buffer.from(payload)) : Buffer.from(payload);
 };
 
-const solmonReedChunks = (
+const solomonReedChunks = (
   chunks: Uint8Array[],
   {
     blocksCount,
@@ -268,9 +268,13 @@ const encode = async () => {
     ((BLOCKS_COUNT * Number(encoderErrorCorrection)) / 100) | 0;
   await addLog(`Filename: ${filename || ""}`);
   await addLog(`extraBlocksCount ${extraBlocksCount}`);
+  const stringData = encoderData.toString();
+  // pack into header filename and file length with their data length(uint8)
   const fileNameHeader = Buffer.concat([
     Buffer.from([filename ? filename.length : 0]),
     Buffer.from(filename || ""),
+    Buffer.from([stringData.length.toString().length]),
+    Buffer.from(stringData.length.toString()),
   ]);
   const payload = fileNameHeader.toString() + encoderData.toString();
   const compressedPayload = compressPayload(payload);
@@ -279,9 +283,10 @@ const encode = async () => {
   const parts = stringToChunks(compressedPayload, CHUNK_SIZE);
   await addLog(`Chunks before: ${parts.length}`);
   setGifProgress(50);
-  const chunks = solmonReedChunks(parts, { blocksCount, extraBlocksCount }).map(
-    (chunk, index) => ({ chunk, index })
-  );
+  const chunks = solomonReedChunks(parts, {
+    blocksCount,
+    extraBlocksCount,
+  }).map((chunk, index) => ({ chunk, index }));
   await addLog(`Chunks count: ${chunks.length}`);
   setGifProgress(100);
 
