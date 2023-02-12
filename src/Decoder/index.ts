@@ -41,6 +41,24 @@ const autoScrollCheckBoxEl = document.getElementById(
 const percentProgressEl = document.getElementById(
   "percentProgress"
 ) as HTMLSpanElement;
+const timeProgressEl = document.getElementById(
+  "timeProgress"
+) as HTMLSpanElement;
+
+let timeInterval: NodeJS.Timer | null = null;
+
+const calcTime = (start: number) => {
+  if (timeInterval) return;
+  timeInterval = setInterval(function() {
+    const delta = Date.now() - start; // milliseconds elapsed since start
+    
+    const seconds = +((delta % 60000) / 1000).toFixed(0);
+    const minutes = Math.floor(delta / 60000);
+  
+    timeProgressEl.innerText = `~ ${minutes}:${(Number(seconds) < 10 ? "0" : "")}${seconds}`;
+}, 1000);
+}
+
 
 const autoScroll: {
   isUserMouseWheel: boolean;
@@ -171,6 +189,7 @@ const setResult = ({ data, filename }: { data: string; filename: string }) => {
       },
     })
   );
+  if (timeInterval) clearInterval(timeInterval)
 };
 
 const getMissingFrames = () => {
@@ -287,6 +306,8 @@ const updateCurrentBuffer = (currentBuffer: Buffer) => {
     }
     tryProcessBlock(currentFrameIdx, currentBuffer.slice(8), opts);
     calcPercentProgress();
+    const start = Date.now();
+    calcTime(start)
   }
 
   autoScroll.scrollToElement();
