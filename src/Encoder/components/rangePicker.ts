@@ -12,7 +12,7 @@ class RangePicker extends HTMLElement {
     value: string;
     title: string;
   }) => `
-  <div class="field">
+  <div>
     <label class="label">${title}</label>
     <div class="control">
         <input

@@ -10,30 +10,49 @@ class RangeRuler extends HTMLElement {
     let columns = "";
 
     for (let i = 0; i < 6; i++) {
-      const left = Math.floor(min + i * step);
+      // const left = Math.floor(min + i * step);
       const right = Math.min(Math.floor(min + (i + 1) * step), max);
 
       columns += `
-        <div class="column has-background-light">
-          ${left} - ${right}
+        <div class="column wrItem">
+          <div class="item">
+            <div class="line"></div>
+            ${i === 5 ? '' : `~${right}`}
+          </div>
         </div>
       `;
     }
 
     return `
       <style>
-        .ruler.is-gapless {
-          margin: 6px 8px;
-        }
-
         .ruler.is-gapless:last-child {
           margin-bottom: 48px;
         }
 
-        .ruler.is-gapless>.column {
+        .ruler.is-gapless>.column, .first-column {
           margin: 0 1px;
           padding: 6px 0 !important;
           text-align: center;
+        }
+
+        .wrItem {
+          position: relative;
+        }
+
+        .item {
+          position: absolute;
+          right: 0;
+          display: flex;
+          width: 0;
+          justify-content: center;
+        }
+
+        .line {
+          position: absolute;
+          height: 50%;
+          background: black;
+          width: 1px;
+          top: -50%;
         }
       </style>
       <div class="ruler columns is-gapless is-mobile">

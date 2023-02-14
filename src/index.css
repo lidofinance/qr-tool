@@ -96,3 +96,7 @@ body {
   max-height: calc(100vh - 41px);
   overflow-y: scroll;
 }
+
+.field {
+  margin-bottom: 0.75rem
+}
