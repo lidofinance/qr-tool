@@ -392,6 +392,11 @@ const encode = async () => {
     event.target.value = String(index);
   };
 
+  encoderImageSize.onchange = () => {
+    const chunk = chunks[currentChunkIndex || 0];
+    drawFrame(chunk, meta);
+  };
+
   setGifProgress(undefined);
 };
 
