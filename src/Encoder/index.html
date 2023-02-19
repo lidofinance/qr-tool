@@ -18,7 +18,7 @@
             ></range-picker>
           </div>
         </div>
-        <div class="columns">
+        <div class="columns flex-wrap">
           <div class="column is-narrow">
             <range-picker
               id="encoderFrameDelay"
@@ -39,7 +39,7 @@
             ></range-picker>
           </div>
         </div>
-        <div class="columns is-vcentered">
+        <div class="columns is-vcentered flex-wrap">
           <div class="column">
             <input
               class="button is-primary"
@@ -48,31 +48,35 @@
               id="playPause"
             />
           </div>
-          <div class="column is-narrow field">
-            <label class="label is-small">Start</label>
-            <div class="field-body">
-              <div class="field">
-                <p class="control">
-                  <input
-                    id="startFrameRange"
-                    class="input is-primary is-small"
-                    placeholder="Start frame index"
-                  />
-                </p>
+          <div class="columns flex-wrap range">
+            <div class="column is-narrow field">
+              <label class="label is-small">Start</label>
+              <div class="field-body">
+                <div class="field">
+                  <p class="control">
+                    <input
+                      id="startFrameRange"
+                      class="input is-primary is-small"
+                      placeholder="Start frame index"
+                      type="number"
+                    />
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="column is-narrow field">
-            <label class="label is-small">End</label>
-            <div class="field-body">
-              <div class="field">
-                <p class="control">
-                  <input
-                    id="endFrameRange"
-                    class="input is-primary is-small"
-                    placeholder="End frame index"
-                  />
-                </p>
+            <div class="column is-narrow field">
+              <label class="label is-small">End</label>
+              <div class="field-body">
+                <div class="field">
+                  <p class="control">
+                    <input
+                      id="endFrameRange"
+                      class="input is-primary is-small"
+                      placeholder="End frame index"
+                      type="number"
+                    />
+                  </p>
+                </div>
               </div>
             </div>
           </div>
