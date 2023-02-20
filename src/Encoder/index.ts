@@ -33,6 +33,9 @@ let currentMetaData: EncodeMeta;
 
 let qrAnimationTimer: number;
 
+let rangeStartIndex = 0;
+let rangeEndIndex = 0;
+
 const pauseQRAnimation = () => {
   clearTimeout(qrAnimationTimer);
 };
@@ -54,9 +57,16 @@ const progressRuler = document.getElementById(
 ) as HTMLInputElement;
 const frameElement = document.getElementById("encoderFrame") as HTMLElement;
 const encoderTimer = document.getElementById("encoderTimer") as HTMLElement;
+const encoderPreview = document.getElementById("encoderPreview") as HTMLElement;
 const playPauseButton = document.getElementById(
   "playPause"
 ) as HTMLButtonElement;
+const startFrameRange = document.getElementById(
+  "startFrameRange"
+) as HTMLInputElement;
+const endFrameRange = document.getElementById(
+  "endFrameRange"
+) as HTMLInputElement;
 
 const playPause = {
   isPlaying: false,
@@ -73,7 +83,7 @@ const playPause = {
   },
   play() {
     if (!currentMetaData) return;
-    
+
     playQRAnimation(currentMetaData, currentChunkIndex);
     this.isPlaying = true;
     playPauseButton.setAttribute("value", "Pause");
@@ -83,6 +93,11 @@ const playPause = {
 playPause.buttonSubscribe();
 encoderFrameDelay.onchange = (event: Event) => {
   encoderTimer.innerText = getEncoderTimer();
+};
+
+encoderImageSize.onchange = () => {
+  encoderPreview.style.width = `${getMaxImageSize()}px`;
+  encoderPreview.style.height = `${getMaxImageSize()}px`;
 };
 
 const getFrameDelayMs = () => {
@@ -96,17 +111,23 @@ const getMaxImageSize = () => {
 };
 
 const getEncoderTimer = () => {
-  if (!totalChunks || !currentChunkIndex) return "00:00";
+  if (!totalChunks) return "00:00 / 00:00";
 
   const frameDelayMs = getFrameDelayMs();
   const totalMs = totalChunks * frameDelayMs;
-  const passedMs = currentChunkIndex * frameDelayMs;
-  const leftMs = totalMs - passedMs;
+  const passedMs = (currentChunkIndex || 0) * frameDelayMs;
 
-  const minutes = Math.floor(leftMs / 60000);
-  const seconds = ((leftMs % 60000) / 1000).toFixed(0);
+  const minutes = Math.floor(totalMs / 60000);
+  const seconds = ((totalMs % 60000) / 1000).toFixed(0);
+  const totalTime = `${minutes}:${Number(seconds) < 10 ? "0" : ""}${seconds}`;
 
-  return `~ ${minutes}:${(Number(seconds) < 10 ? "0" : "")}${seconds}`;
+  const resMinutes = Math.floor(passedMs / 60000);
+  const resSeconds = ((passedMs % 60000) / 1000).toFixed(0);
+  const resTime = `${resMinutes}:${
+    Number(resSeconds) < 10 ? "0" : ""
+  }${resSeconds}`;
+
+  return `~ ${resTime} / ${totalTime} `;
 };
 
 const playQRAnimation = (encodedResult: EncodeMeta, index = 0) => {
@@ -121,7 +142,11 @@ const playQRAnimation = (encodedResult: EncodeMeta, index = 0) => {
 
   // next frame
   qrAnimationTimer = setTimeout(() => {
-    const nextIndex = index + 1 < chunks.length ? index + 1 : 0;
+    const start = rangeStartIndex ? rangeStartIndex : 0;
+    const end = rangeEndIndex ? rangeEndIndex : chunks.length;
+    const currentIndex = index < start ? start - 1 : index;
+
+    const nextIndex = currentIndex + 1 <= end ? currentIndex + 1 : start;
     playQRAnimation(encodedResult, nextIndex);
   }, frameDelay) as any;
 };
@@ -170,7 +195,9 @@ const drawFrame = (
 };
 
 const compressPayload = (payload: string): Uint8Array => {
-  return COMPRESS_PAYLOAD ? compress(Buffer.from(payload)) : Buffer.from(payload);
+  return COMPRESS_PAYLOAD
+    ? compress(Buffer.from(payload))
+    : Buffer.from(payload);
 };
 
 const solomonReedChunks = (
@@ -306,8 +333,13 @@ const encode = async () => {
   totalChunks = chunks.length;
   currentMetaData = meta;
 
-  playQRAnimation(meta);
-  playPause.play();
+  // draw first frame
+  drawFrame(chunks[0], meta);
+
+  rangeStartIndex = 0;
+  rangeEndIndex = chunks.length - 1;
+  startFrameRange.value = "0";
+  endFrameRange.value = `${chunks.length - 1}`;
 
   progressElementInput.onmousedown = (event: Event) => {
     if (!(event.target instanceof HTMLInputElement)) return;
@@ -321,6 +353,48 @@ const encode = async () => {
     currentChunkIndex = index;
     if (playPause.isPlaying) playQRAnimation(meta, index);
     encoderTimer.innerText = getEncoderTimer();
+
+    const chunk = chunks[index];
+    drawFrame(chunk, meta);
+  };
+
+  progressElementInput.onchange = (event: Event) => {
+    if (!(event.target instanceof HTMLInputElement)) return;
+
+    const index = Number(event.target.value);
+    currentChunkIndex = index;
+
+    const chunk = chunks[index];
+    drawFrame(chunk, meta);
+  };
+
+  startFrameRange.onchange = (event: Event) => {
+    if (!(event.target instanceof HTMLInputElement)) return;
+
+    const index = Math.min(
+      Math.max(Number(event.target.value), 0),
+      rangeEndIndex - 1
+    );
+    rangeStartIndex = index;
+
+    event.target.value = String(index);
+  };
+
+  endFrameRange.onchange = (event: Event) => {
+    if (!(event.target instanceof HTMLInputElement)) return;
+
+    const index = Math.min(
+      Math.max(Number(event.target.value), rangeStartIndex + 1),
+      chunks.length - 1
+    );
+    rangeEndIndex = index;
+
+    event.target.value = String(index);
+  };
+
+  encoderImageSize.onchange = () => {
+    const chunk = chunks[currentChunkIndex || 0];
+    drawFrame(chunk, meta);
   };
 
   setGifProgress(undefined);
@@ -350,6 +424,8 @@ encoderDataEl.addEventListener("drop", function (event) {
       textareaEL.value = contents;
       cleanLog();
       await addLog(`File added: ${filename}; Size: ${contents.length}`);
+
+      encode();
     })();
   }
 });
@@ -370,3 +446,24 @@ encoderDataEl.addEventListener("dragleave", function (event) {
   );
   this.className = "textarea";
 });
+
+const debounce = (func: () => void, timeout = 500) => {
+  let timer: NodeJS.Timeout;
+
+  return () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func.apply(this);
+    }, timeout);
+  };
+};
+
+encoderDataEl.addEventListener(
+  "input",
+  debounce(function () {
+    encode();
+  })
+);
+
+encoderPreview.style.width = `${getMaxImageSize()}px`;
+encoderPreview.style.height = `${getMaxImageSize()}px`;

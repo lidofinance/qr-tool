@@ -22,7 +22,7 @@ class FilePanel extends HTMLElement {
     this.addEventListener("addFile", (ev) => {
       const { detail } = ev as CustomEvent;
       const { filename, data } = detail;
-      this.addItem(filename || Date.now() + ".txt", data);
+      this.addItem(filename || Date.now() + ".json", data);
     });
     this.render();
   }
