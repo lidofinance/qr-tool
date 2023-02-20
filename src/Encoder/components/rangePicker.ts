@@ -12,7 +12,7 @@ class RangePicker extends HTMLElement {
     value: string;
     title: string;
   }) => `
-  <div class="field">
+  <div>
     <label class="label">${title}</label>
     <div class="control">
         <input
@@ -42,7 +42,7 @@ class RangePicker extends HTMLElement {
     const slider = this.querySelector(".slider") as HTMLInputElement;
     const display = this.querySelector(".value") as HTMLSpanElement;
     const self = this;
-    slider.addEventListener("change", function () {
+    slider.addEventListener("input", function () {
       const value = (this as HTMLInputElement).value;
       display.innerText = value;
       self.setAttribute("value", value);
@@ -84,7 +84,7 @@ class RangePicker extends HTMLElement {
     slider.value = value;
 
     label.innerText = title;
-    display.innerText = value;
+    display.innerText = `${value}/${max}`;
   }
 }
 
