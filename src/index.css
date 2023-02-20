@@ -100,3 +100,11 @@ body {
 .field {
   margin-bottom: 0.75rem
 }
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.range {
+  padding: 0.75rem
+}

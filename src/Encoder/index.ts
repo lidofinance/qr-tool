@@ -144,7 +144,7 @@ const playQRAnimation = (encodedResult: EncodeMeta, index = 0) => {
   qrAnimationTimer = setTimeout(() => {
     const start = rangeStartIndex ? rangeStartIndex : 0;
     const end = rangeEndIndex ? rangeEndIndex : chunks.length;
-    const currentIndex = index <= start ? start : index;
+    const currentIndex = index < start ? start - 1 : index;
 
     const nextIndex = currentIndex + 1 <= end ? currentIndex + 1 : start;
     playQRAnimation(encodedResult, nextIndex);
@@ -390,6 +390,11 @@ const encode = async () => {
     rangeEndIndex = index;
 
     event.target.value = String(index);
+  };
+
+  encoderImageSize.onchange = () => {
+    const chunk = chunks[currentChunkIndex || 0];
+    drawFrame(chunk, meta);
   };
 
   setGifProgress(undefined);
