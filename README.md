@@ -1,5 +1,11 @@
 # QR gif tool
 
+## Depretaced ⚠️
+
+The application was used as part of [dc4bc](https://github.com/lidofinance/dc4bc) and is no longer supported after [rotating withdrawal credentials from 0x00 type a to 0x01](https://twitter.com/LidoFinance/status/1646977448410480643)
+
+---
+
 This tool can be used to encode / decode data in QR-gifs
 Just download [html file](index.html) and open it in your browser.
 
